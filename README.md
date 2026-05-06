@@ -1,2 +1,2 @@
-# baseball-saas
-Basic Baseball player registration and statistics platform
+# baseball-tms
+Basic Baseball tournament management system
