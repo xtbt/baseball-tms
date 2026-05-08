@@ -35,6 +35,7 @@ final class AuthService
         $exp = time() + ($ttl * 60);
         $payload = [
             'sub' => (int) $user['id'],
+            'jti' => bin2hex(random_bytes(16)),
             'email' => $user['email'],
             'role' => $user['role'],
             'iss' => $this->config['jwt']['issuer'],

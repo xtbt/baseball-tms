@@ -1,0 +1,763 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-08T19:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2024.5.0",
+  "resources": [
+    {
+      "_id": "wrk_baseball_tms",
+      "_type": "workspace",
+      "name": "Baseball TMS API v1",
+      "description": "Colección completa para pruebas manuales de Baseball TMS API"
+    },
+    {
+      "_id": "env_baseball_tms",
+      "_type": "environment",
+      "parentId": "wrk_baseball_tms",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost/baseball-tms/API/v1",
+        "email": "jsanchez.1983@gmail.com",
+        "password": "AdmSindicato26!",
+        "token": "",
+        "category_id": 1,
+        "team_id": 1,
+        "venue_id": 1,
+        "game_id": 1,
+        "user_id": 1,
+        "profile_user_id": 1,
+        "season_year": 2026
+      },
+      "color": null,
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_health",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Health"
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "GET /health",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "body": {},
+      "parameters": [],
+      "headers": []
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Auth"
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_auth_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "GET /auth/me",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_auth_logout",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/logout",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/logout",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_categories",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Categories"
+    },
+    {
+      "_id": "req_categories_list",
+      "_type": "request",
+      "parentId": "fld_categories",
+      "name": "GET /categories",
+      "method": "GET",
+      "url": "{{ _.base_url }}/categories",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_categories_show",
+      "_type": "request",
+      "parentId": "fld_categories",
+      "name": "GET /categories/{id}",
+      "method": "GET",
+      "url": "{{ _.base_url }}/categories/{{ _.category_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_categories_create",
+      "_type": "request",
+      "parentId": "fld_categories",
+      "name": "POST /categories",
+      "method": "POST",
+      "url": "{{ _.base_url }}/categories",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Categoria Test Insomnia\",\n  \"description\": \"Creada desde Insomnia\",\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_categories_update",
+      "_type": "request",
+      "parentId": "fld_categories",
+      "name": "PUT /categories/{id}",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/categories/{{ _.category_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Categoria Test Insomnia Updated\",\n  \"description\": \"Actualizada desde Insomnia\",\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_categories_delete",
+      "_type": "request",
+      "parentId": "fld_categories",
+      "name": "DELETE /categories/{id}",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/categories/{{ _.category_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_teams",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Teams"
+    },
+    {
+      "_id": "req_teams_list",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "GET /teams",
+      "method": "GET",
+      "url": "{{ _.base_url }}/teams",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_teams_show",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "GET /teams/{id}",
+      "method": "GET",
+      "url": "{{ _.base_url }}/teams/{{ _.team_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_teams_create",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "POST /teams",
+      "method": "POST",
+      "url": "{{ _.base_url }}/teams",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Equipo Test Insomnia\",\n  \"category_id\": {{ _.category_id }},\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_teams_update",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "PUT /teams/{id}",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/teams/{{ _.team_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Equipo Test Insomnia Updated\",\n  \"category_id\": {{ _.category_id }},\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_teams_delete",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "DELETE /teams/{id}",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/teams/{{ _.team_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_venues",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Venues"
+    },
+    {
+      "_id": "req_venues_list",
+      "_type": "request",
+      "parentId": "fld_venues",
+      "name": "GET /venues",
+      "method": "GET",
+      "url": "{{ _.base_url }}/venues",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_venues_show",
+      "_type": "request",
+      "parentId": "fld_venues",
+      "name": "GET /venues/{id}",
+      "method": "GET",
+      "url": "{{ _.base_url }}/venues/{{ _.venue_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_venues_create",
+      "_type": "request",
+      "parentId": "fld_venues",
+      "name": "POST /venues",
+      "method": "POST",
+      "url": "{{ _.base_url }}/venues",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Estadio Test Insomnia\",\n  \"address\": \"Direccion de prueba\",\n  \"city\": \"Tijuana\",\n  \"state\": \"Baja California\",\n  \"country\": \"Mexico\",\n  \"capacity\": 1500,\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_venues_update",
+      "_type": "request",
+      "parentId": "fld_venues",
+      "name": "PUT /venues/{id}",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/venues/{{ _.venue_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Estadio Test Insomnia Updated\",\n  \"address\": \"Direccion actualizada\",\n  \"city\": \"Tijuana\",\n  \"state\": \"Baja California\",\n  \"country\": \"Mexico\",\n  \"capacity\": 1800,\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_venues_delete",
+      "_type": "request",
+      "parentId": "fld_venues",
+      "name": "DELETE /venues/{id}",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/venues/{{ _.venue_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_games",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Games"
+    },
+    {
+      "_id": "req_games_list",
+      "_type": "request",
+      "parentId": "fld_games",
+      "name": "GET /games",
+      "method": "GET",
+      "url": "{{ _.base_url }}/games",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_games_show",
+      "_type": "request",
+      "parentId": "fld_games",
+      "name": "GET /games/{id}",
+      "method": "GET",
+      "url": "{{ _.base_url }}/games/{{ _.game_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_games_create",
+      "_type": "request",
+      "parentId": "fld_games",
+      "name": "POST /games",
+      "method": "POST",
+      "url": "{{ _.base_url }}/games",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"game_date\": \"2026-05-11\",\n  \"game_time\": \"19:00:00\",\n  \"venue_id\": {{ _.venue_id }},\n  \"home_team_id\": {{ _.team_id }},\n  \"away_team_id\": {{ _.team_id }},\n  \"status\": \"scheduled\",\n  \"notes\": \"Juego creado desde Insomnia\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_games_update",
+      "_type": "request",
+      "parentId": "fld_games",
+      "name": "PUT /games/{id}",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/games/{{ _.game_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"completed\",\n  \"home_score\": 9,\n  \"away_score\": 8,\n  \"innings_played\": 9\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_games_delete",
+      "_type": "request",
+      "parentId": "fld_games",
+      "name": "DELETE /games/{id}",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/games/{{ _.game_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_users",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Users"
+    },
+    {
+      "_id": "req_users_list",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "GET /users",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_users_show",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "GET /users/{id}",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_users_create",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "POST /users",
+      "method": "POST",
+      "url": "{{ _.base_url }}/users",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"usuario.insomnia@example.com\",\n  \"password\": \"TempPass123\",\n  \"role\": \"player\",\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_users_update",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "PUT /users/{id}",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"role\": \"manager\",\n  \"is_active\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_users_delete",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "DELETE /users/{id}",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_profiles",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "User Profiles"
+    },
+    {
+      "_id": "req_profiles_show",
+      "_type": "request",
+      "parentId": "fld_profiles",
+      "name": "GET /users/{id}/profile",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users/{{ _.profile_user_id }}/profile",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_profiles_upsert",
+      "_type": "request",
+      "parentId": "fld_profiles",
+      "name": "PUT /users/{id}/profile",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/users/{{ _.profile_user_id }}/profile",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"team_id\": {{ _.team_id }},\n  \"first_name\": \"Carlos\",\n  \"paternal_surname\": \"Lopez\",\n  \"maternal_surname\": \"Ruiz\",\n  \"birth_date\": \"1992-08-15\",\n  \"phone\": \"6641234567\",\n  \"jersey_number\": 12,\n  \"position\": \"CF\",\n  \"employee_class\": \"base_employee\",\n  \"employee_number\": \"EMP-INSOMNIA-001\",\n  \"isstecali_affiliation\": \"ISS-INSOMNIA-001\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_standings",
+      "_type": "request_group",
+      "parentId": "wrk_baseball_tms",
+      "name": "Standings"
+    },
+    {
+      "_id": "req_standings_list",
+      "_type": "request",
+      "parentId": "fld_standings",
+      "name": "GET /standings",
+      "method": "GET",
+      "url": "{{ _.base_url }}/standings",
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "req_standings_filter",
+      "_type": "request",
+      "parentId": "fld_standings",
+      "name": "GET /standings (filtered)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/standings",
+      "parameters": [
+        {
+          "name": "category_id",
+          "value": "{{ _.category_id }}"
+        },
+        {
+          "name": "season_year",
+          "value": "{{ _.season_year }}"
+        },
+        {
+          "name": "limit",
+          "value": "10"
+        },
+        {
+          "name": "offset",
+          "value": "0"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {}
+    }
+  ]
+}

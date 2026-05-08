@@ -10,11 +10,13 @@ use App\Services\AuthService;
 
 final class AuthController extends BaseController
 {
+    private $config;
     private $request;
     private $service;
 
     public function __construct(array $config, Request $request)
     {
+        $this->config = $config;
         $this->request = $request;
         $this->service = new AuthService($config);
     }
@@ -42,6 +44,9 @@ final class AuthController extends BaseController
             );
             $this->ok($result);
         } catch (\Throwable $e) {
+            if (!empty($this->config['app']['debug'])) {
+                $this->fail($e->getMessage(), 401);
+            }
             $this->fail('Invalid credentials', 401);
         }
     }
