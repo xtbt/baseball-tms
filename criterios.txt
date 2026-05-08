@@ -1,79 +1,23 @@
-Baseball-SaaS será una plataforma web para la gestión de equipos de béisbol, jugadores y estadísticas bajo los 
+Baseball-TMS será una plataforma web para la gestión de torneos de béisbol bajo los 
 siguientes criterios:
 
-1. Base de Datos (sugerida): Se requiere una base de datos relacional para almacenar y gestionar la información que 
-será implementada utilizando MySQL como sistema de gestión de bases de datos.
-
-EQUIPOS:
-- id (identificación única)
-- nombre (texto)
-- categoría (id categoría)
-
-CATEGORÍAS:
-- id (identificación única)
-- nombre (texto)
-- descripción (texto)
-
-JUEGOS:
-- id (identificación única)
-- fecha (fecha)
-- hora (texto)
-- campo (texto)
-- equipo_local (id equipo)
-- equipo_visitante (id equipo)
-- marcador_local (número)
-- marcador_visitante (número)
-- estado (opciones: programado, jugado, cancelado)
-
-USUARIOS: 
-- id (identificación única)
-- email (texto)
-- contraseña (texto)
-- rol (opciones: admin, manager, jugador)
-- token (texto)
-- vigencia del token (fecha)
-
-DETALLES DE USUARIOS:
-- id (identificación única)
-- usuario (id usuario)
-- equipo (id equipo)
-- nombre (texto)
-- apellido paterno (text)
-- apellido materno (text)
-- fecha_nacimiento (fecha)
-- curp (texto)
-- telefono (texto)
-- numero de jugador (número)
-- posicion de jugador (texto)
-- clase (opciones: empleado de base, empleado de confianza, empleado de contrato, hijo de empleado)
-- número de empleado (numero)
-- afiliación de Isstecali (numero)
-
-NOTA: Esta estructura es sólo una sugerencia inicial y puede ser modificada según se vaya requiriendo. Utiliza nombres 
-de tablas, campos, llaves e índices SIEMPRE EN INGLÉS usando nomenclaturas estándar.
-
-2. Backend: Esta base de datos ya la importe a mi servidor local de MariaDB. Necesito que desarrolles el BACKEND utilizando PHP puro (Sin Frameworks, se acepta composer sólo de ser necesario), utilizando el modelo MVC (Modelo-Vista-Controlador), pero de una forma más flexible y adaptada a las necesidades del proyecto. No es necesario seguir estrictamente el modelo tradicional, si no que es más importante la funcionalidad y velocidad. Se 
-debe de considerar que el modelo de autenticación será por medio de JWT (JSON Web Tokens).
-Todo el backend funcionará como un API RESTful que podría ser consumido por diferentes plataformas y dispositivos.
-Puede que en un futuro se requieran nuevas versiones del API, así que la estructura de folders para el API será en referencia a la raiz de este proyecto "API/v1/".
-NOTA: Todo será desarrollado SIEMPRE EN INGLÉS utilizando estándares en nomenclatura y comentando el código en la 
-medida de lo posible. Cualquier duda para mejorar tu comprensión de lo que requiero, pregúntamelo sobre la marcha.
-
-3. Frontend: El frontend será desarrollado utilizando HTML, CSS y JavaScript, para no depender de frameworks que puedan 
+Frontend: El frontend será desarrollado utilizando HTML, CSS y JavaScript, para no depender de frameworks que puedan 
 romperse con cada actualización o cambio en sus versiones. La interfaz se requiere que sea intuitiva, responsiva y 
 fácil de usar para mejorar la experiencia del usuario, ya que parte de los usuarios finales pueden no estar 
 familiarizados con tecnologías avanzadas (Interfaz con estilo deportivo). Se requieren los media queries más adecuados 
 para que la interfaz se adapte a celulares, tabletas, laptops y pantallas de escritorio. Se utilizará JWT (JSON Web Tokens) para garantizar la seguridad y autenticación de los 
-usuarios, siempre con el enfoque necesario para adaptarse a los roles de cada usuario. Los roles de usuario son:
-- Administrador (control total)
-- Manager/Entrenador (solo consulta informacion del equipo)
-- Jugador (solo consulta su información personal)
+usuarios, siempre con el enfoque necesario para adaptarse a los roles de cada usuario. Los roles de usuario definidos en el backend 
+(API/v1/) son:
+- Administrador (control total sobre el sistema, incluyendo la gestión de usuarios (CRUD), perfiles, categorías (CRUD), equipos (CRUD)
+campos (CRUD) y juegos (CRUD).)
+- Manager/Entrenador (solo consulta informacion de los jugadores de su equipo, el calendario/historial de juegos en dashboard, tabla de posiciones, estadísticas de equipo y estadísticas de jugadores)
+- Jugador (solo consulta su información personal, el calendario/historial de juegos en dashboard, estadísticas de equipo y estadísticas propias)
 
 Detalles de diseño (Interfaz intuitiva, minimalista, con toque deportivo y acceso rápido a información relevante):
-A) Usuarios de tipo jugador: Sólo podrá ver sus datos personales, el calendario de juegos registrados (con resultados en caso de haber finalizado), tabla de posiciones 
-y estadísticas personales. Todo esto estará disponible en una interfaz clara y accesible con posibilidad de filtros y opciones de búsqueda avanzada.
-B) Usuarios de tipo manager/entrenador: Podrá consultar información del equipo completo (listas de jugadores de su equipo), y todo lo del usuario de tipo jugador.
-c) Usuarios de tipo administrador: Tendrán control total sobre el sistema, incluyendo la gestión de usuarios (CRUD), equipos (CRUD), 
-categorías (CRUD) y juegos (CRUD).
+- El API que se consumirá se encuentra localizado en /API/v1/ (El que ya fue creado anteriormente).
+- En la raíz del proyecto se creará la estructura de folders del frontend (scripts, styles, assets, etc.)
+- El logo de plataforma es /assets/logo/sindicato.jpg
+Utilizar los colores del logo proporcionado para darle el estilo a la interfaz de usuario.
+
 NOTA: Todo será desarrollado SIEMPRE EN INGLÉS utilizando estándares en nomenclatura y comentando el código en la 
 medida de lo posible.
