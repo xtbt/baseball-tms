@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baseball TMS</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="assets/logo/sindicato.jpg" alt="logo"><span>Baseball TMS</span></div>
+    <div class="session"><span id="sessionLabel">Guest</span><button id="logoutBtn" hidden>Logout</button></div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel" id="authPanel">
+      <h2>Login</h2>
+      <label>Email<input id="email" type="email" value="jsanchez.1983@gmail.com"></label>
+      <label>Password<input id="password" type="password" value="AdmSindicato26!"></label>
+      <button id="loginBtn">Sign in</button>
+      <button id="healthBtn" class="ghost">Health check</button>
+      <p id="authMsg"></p>
+    </aside>
+
+    <section class="panel" id="appPanel" hidden>
+      <nav id="nav" class="nav">
+        <button data-view="dashboard">Dashboard</button>
+        <button data-view="standings">Standings</button>
+        <button data-view="profile">Profile</button>
+        <button data-view="categories" data-admin="1">Categories</button>
+        <button data-view="teams" data-admin="1">Teams</button>
+        <button data-view="venues" data-admin="1">Venues</button>
+        <button data-view="games" data-admin="1">Games</button>
+        <button data-view="users" data-admin="1">Users</button>
+      </nav>
+
+      <section id="dashboard" class="view"></section>
+      <section id="standings" class="view" hidden></section>
+      <section id="profile" class="view" hidden></section>
+      <section id="categories" class="view" hidden></section>
+      <section id="teams" class="view" hidden></section>
+      <section id="venues" class="view" hidden></section>
+      <section id="games" class="view" hidden></section>
+      <section id="users" class="view" hidden></section>
+    </section>
+  </main>
+
+  <template id="crudTemplate">
+    <div class="crudGrid">
+      <h3 data-title></h3>
+      <div><label>Limit<input data-limit type="number" value="10"></label><label>Offset<input data-offset type="number" value="0"></label><button data-list>List</button></div>
+      <div><label>ID<input data-id type="number"></label><button data-show>Show</button><button data-delete class="danger">Delete</button></div>
+      <div><h4>Create</h4><textarea data-create rows="6"></textarea><button data-create-btn>Create</button></div>
+      <div><h4>Update</h4><textarea data-update rows="6"></textarea><button data-update-btn>Update</button></div>
+      <pre data-output></pre>
+    </div>
+  </template>
+
+  <script type="module" src="scripts/app.js"></script>
+</body>
+</html>
