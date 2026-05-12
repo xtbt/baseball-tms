@@ -8,6 +8,7 @@ if (!is_logged_in()) {
     redirect_to('/baseball-tms/index.php');
 }
 
+// Main block: Resolve authenticated context and target user.
 $auth = auth_data();
 $user = $auth['user'];
 $token = (string) $auth['token'];
@@ -15,6 +16,17 @@ $sessionUserId = (int) ($user['id'] ?? 0);
 $requestedUserId = (int) ($_GET['user_id'] ?? $sessionUserId);
 $userId = $requestedUserId > 0 ? $requestedUserId : $sessionUserId;
 $userRole = (string) ($user['role'] ?? '');
+$isAdmin = $userRole === 'admin';
+
+$flashError = (string) ($_SESSION['flash_error'] ?? '');
+$flashSuccess = (string) ($_SESSION['flash_success'] ?? '');
+unset($_SESSION['flash_error'], $_SESSION['flash_success']);
+
+$requiredProfileFields = [
+    'first_name' => 'Nombre',
+    'paternal_surname' => 'Apellido paterno',
+    'birth_date' => 'Fecha de nacimiento',
+];
 
 if ($userRole !== 'player' && $userRole !== 'manager' && $userRole !== 'admin') {
     clear_auth();
@@ -26,26 +38,147 @@ if ($userRole === 'player' && $requestedUserId !== $sessionUserId) {
     redirect_to('/baseball-tms/user/profile.php');
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$isAdmin) {
+        $_SESSION['flash_error'] = 'No tienes permisos para editar este perfil.';
+        redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+    }
+
+    $stringOrNull = static function (string $key): ?string {
+        $value = trim((string) ($_POST[$key] ?? ''));
+        return $value !== '' ? $value : null;
+    };
+
+    $firstName = $stringOrNull('first_name');
+    $paternalSurname = $stringOrNull('paternal_surname');
+    $maternalSurname = $stringOrNull('maternal_surname');
+    $birthDate = $stringOrNull('birth_date');
+    $curp = $stringOrNull('curp');
+    $phone = $stringOrNull('phone');
+    $position = $stringOrNull('position');
+    $employeeClass = $stringOrNull('employee_class');
+    $employeeNumber = $stringOrNull('employee_number');
+    $isstecaliAffiliation = $stringOrNull('isstecali_affiliation');
+
+    $teamIdRaw = trim((string) ($_POST['team_id'] ?? ''));
+    $teamId = null;
+    if ($teamIdRaw !== '') {
+        if (ctype_digit($teamIdRaw) && (int) $teamIdRaw > 0) {
+            $teamId = (int) $teamIdRaw;
+        } else {
+            $_SESSION['flash_error'] = 'El equipo seleccionado no es válido.';
+            redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+        }
+    }
+
+    $jerseyRaw = trim((string) ($_POST['jersey_number'] ?? ''));
+    $jerseyNumber = null;
+    if ($jerseyRaw !== '') {
+        if (ctype_digit($jerseyRaw)) {
+            $jerseyNumber = (int) $jerseyRaw;
+        } else {
+            $_SESSION['flash_error'] = 'El número de jersey debe ser numérico.';
+            redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+        }
+    }
+
+    $errors = [];
+    foreach ($requiredProfileFields as $fieldKey => $fieldLabel) {
+        if (trim((string) ($_POST[$fieldKey] ?? '')) === '') {
+            $errors[] = 'El campo ' . $fieldLabel . ' es obligatorio.';
+        }
+    }
+
+    if ($birthDate !== null) {
+        $birthDateValid = date_create_from_format('Y-m-d', $birthDate);
+        if (!$birthDateValid || $birthDateValid->format('Y-m-d') !== $birthDate) {
+            $errors[] = 'La fecha de nacimiento debe estar en formato válido.';
+        }
+    }
+
+    if ($curp !== null && !preg_match('/^[A-Z]{4}[0-9]{6}[A-Z]{6}[A-Z0-9]{2}$/i', $curp)) {
+        $errors[] = 'La CURP debe tener un formato válido de 18 caracteres.';
+    }
+
+    if ($phone !== null && !preg_match('/^[0-9+()\-\s]{7,20}$/', $phone)) {
+        $errors[] = 'El teléfono debe contener únicamente números y símbolos válidos.';
+    }
+
+    if ($employeeNumber !== null && !preg_match('/^[A-Za-z0-9\-]{1,30}$/', $employeeNumber)) {
+        $errors[] = 'El número de empleado tiene formato inválido.';
+    }
+
+    if (!empty($errors)) {
+        $_SESSION['flash_error'] = implode(' ', $errors);
+        redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+    }
+
+    $payload = [
+        'team_id' => $teamId,
+        'first_name' => $firstName,
+        'paternal_surname' => $paternalSurname,
+        'maternal_surname' => $maternalSurname,
+        'birth_date' => $birthDate,
+        'curp' => $curp,
+        'phone' => $phone,
+        'jersey_number' => $jerseyNumber,
+        'position' => $position,
+        'employee_class' => $employeeClass,
+        'employee_number' => $employeeNumber,
+        'isstecali_affiliation' => $isstecaliAffiliation,
+    ];
+
+    $saveResponse = api_request('PUT', '/users/' . $userId . '/profile', $token, $payload);
+    if (!empty($saveResponse['ok'])) {
+        $_SESSION['flash_success'] = 'Perfil guardado correctamente.';
+    } else {
+        $message = (string) ($saveResponse['body']['message'] ?? 'No se pudo guardar el perfil.');
+        $_SESSION['flash_error'] = $message;
+    }
+
+    redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+}
+
+// Main block: Fetch linked records from users and user_profiles via user_id.
+$userInfoResponse = api_request('GET', '/users/' . $userId, $token);
+$profileUser = $userInfoResponse['body']['data'] ?? [];
+
 $profileResponse = api_request('GET', '/users/' . $userId . '/profile', $token);
 $profile = $profileResponse['body']['data'] ?? [];
 
-$userInfoResponse = api_request('GET', '/users/' . $userId, $token);
-$profileUser = $userInfoResponse['body']['data'] ?? [];
-$profileEmail = (string) ($profileUser['email'] ?? $user['email'] ?? '');
-$profileRole = (string) ($profileUser['role'] ?? $userRole);
-$teamName = 'Sin equipo';
-if (!empty($profile['team_id'])) {
-    $teamResponse = api_request('GET', '/teams/' . (int) $profile['team_id'], $token);
-    if (!empty($teamResponse['body']['data']['name'])) {
-        $teamName = (string) $teamResponse['body']['data']['name'];
+$teamsResponse = api_request('GET', '/teams', $token);
+$teams = $teamsResponse['body']['data'] ?? [];
+$teamsMap = [];
+foreach ($teams as $teamItem) {
+    $teamItemId = (int) ($teamItem['id'] ?? 0);
+    if ($teamItemId > 0) {
+        $teamsMap[$teamItemId] = (string) ($teamItem['name'] ?? 'N/D');
     }
 }
 
-$fullName = trim(implode(' ', [
-    (string) ($profile['first_name'] ?? ''),
-    (string) ($profile['paternal_surname'] ?? ''),
-    (string) ($profile['maternal_surname'] ?? ''),
-]));
+$teamName = 'Sin equipo';
+$profileTeamId = (int) ($profile['team_id'] ?? 0);
+if ($profileTeamId > 0 && isset($teamsMap[$profileTeamId])) {
+    $teamName = $teamsMap[$profileTeamId];
+}
+
+// Main block: Prepare safe display values for read-only fields.
+$displayValue = static function ($value): string {
+    if ($value === null) {
+        return 'N/D';
+    }
+    $text = trim((string) $value);
+    return $text !== '' ? $text : 'N/D';
+};
+
+$formValue = static function ($value): string {
+    if ($value === null) {
+        return '';
+    }
+    return trim((string) $value);
+};
+
+$isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Inactivo';
 ?>
 <!doctype html>
 <html lang="es">
@@ -72,33 +205,97 @@ $fullName = trim(implode(' ', [
 <main class="container">
     <section class="card">
         <h2>Mi perfil</h2>
-        <form class="readonly-form">
-            <label>Correo
-                <input type="text" readonly value="<?= htmlspecialchars($profileEmail, ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Rol
-                <input type="text" readonly value="<?= htmlspecialchars($profileRole, ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Nombre completo
-                <input type="text" readonly value="<?= htmlspecialchars($fullName !== '' ? $fullName : 'N/D', ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Equipo
-                <input type="text" readonly value="<?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Fecha de nacimiento
-                <input type="text" readonly value="<?= htmlspecialchars((string) ($profile['birth_date'] ?? 'N/D'), ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Teléfono
-                <input type="text" readonly value="<?= htmlspecialchars((string) ($profile['phone'] ?? 'N/D'), ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Número de jersey
-                <input type="text" readonly value="<?= htmlspecialchars((string) ($profile['jersey_number'] ?? 'N/D'), ENT_QUOTES, 'UTF-8') ?>">
-            </label>
-            <label>Posición
-                <input type="text" readonly value="<?= htmlspecialchars((string) ($profile['position'] ?? 'N/D'), ENT_QUOTES, 'UTF-8') ?>">
-            </label>
+        <?php if ($flashSuccess !== ''): ?>
+            <div class="flash flash--ok"><?= htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif; ?>
+        <?php if ($flashError !== ''): ?>
+            <div class="flash flash--error"><?= htmlspecialchars($flashError, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif; ?>
+        <p class="form-note">Los campos marcados con * son obligatorios.</p>
+        <form class="readonly-form" method="post" action="/baseball-tms/user/profile.php?user_id=<?= (int) $userId ?>">
+            <fieldset>
+                <legend>Datos de usuario</legend>
+                <label>ID de usuario
+                    <input type="text" readonly value="<?= htmlspecialchars($displayValue($profileUser['id'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Correo
+                    <input type="text" readonly value="<?= htmlspecialchars($displayValue($profileUser['email'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Rol
+                    <input type="text" readonly value="<?= htmlspecialchars($displayValue($profileUser['role'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Estado
+                    <input type="text" readonly value="<?= htmlspecialchars($isActiveText, ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Último acceso
+                    <input type="text" readonly value="<?= htmlspecialchars($displayValue($profileUser['last_login_at'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+            </fieldset>
+            <fieldset>
+                <legend>Datos de perfil</legend>
+                <label>Equipo
+                    <?php if ($isAdmin): ?>
+                        <select name="team_id">
+                            <option value="">Sin equipo</option>
+                            <?php foreach ($teamsMap as $teamIdOption => $teamLabel): ?>
+                                <option value="<?= (int) $teamIdOption ?>" <?= $profileTeamId === (int) $teamIdOption ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($teamLabel, ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <input type="text" readonly value="<?= htmlspecialchars($displayValue($teamName), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
+                </label>
+                <label>Nombre *
+                    <input type="text" name="first_name" <?= $isAdmin ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['first_name'] ?? null) : $displayValue($profile['first_name'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Apellido paterno *
+                    <input type="text" name="paternal_surname" <?= $isAdmin ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['paternal_surname'] ?? null) : $displayValue($profile['paternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Apellido materno
+                    <input type="text" name="maternal_surname" <?= $isAdmin ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['maternal_surname'] ?? null) : $displayValue($profile['maternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Fecha de nacimiento *
+                    <input type="date" name="birth_date" <?= $isAdmin ? 'required max="' . date('Y-m-d') . '"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['birth_date'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>CURP
+                    <input type="text" name="curp" <?= $isAdmin ? 'maxlength="18" pattern="[A-Za-z]{4}[0-9]{6}[A-Za-z]{6}[A-Za-z0-9]{2}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['curp'] ?? null) : $displayValue($profile['curp'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Teléfono
+                    <input type="tel" name="phone" <?= $isAdmin ? 'maxlength="20" pattern="[0-9+()\-\s]{7,20}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['phone'] ?? null) : $displayValue($profile['phone'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Número de jersey
+                    <input type="number" name="jersey_number" <?= $isAdmin ? 'min="0" max="999" step="1"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['jersey_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Posición
+                    <input type="text" name="position" <?= $isAdmin ? 'maxlength="50"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['position'] ?? null) : $displayValue($profile['position'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Clase de empleado
+                    <input type="text" name="employee_class" <?= $isAdmin ? 'maxlength="50"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['employee_class'] ?? null) : $displayValue($profile['employee_class'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Número de empleado
+                    <input type="text" name="employee_number" <?= $isAdmin ? 'maxlength="30" pattern="[A-Za-z0-9\-]{1,30}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['employee_number'] ?? null) : $displayValue($profile['employee_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Afiliación ISSSTECALI
+                    <input type="text" name="isstecali_affiliation" <?= $isAdmin ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['isstecali_affiliation'] ?? null) : $displayValue($profile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+            </fieldset>
+            <?php if ($isAdmin): ?>
+                <div>
+                    <button type="submit" class="btn btn--primary">Guardar perfil</button>
+                </div>
+            <?php endif; ?>
         </form>
     </section>
 </main>
+<script>
+setTimeout(function () {
+    var flashes = document.querySelectorAll('.flash');
+    for (var i = 0; i < flashes.length; i++) {
+        flashes[i].style.display = 'none';
+    }
+}, 3000);
+</script>
 </body>
 </html>
