@@ -17,6 +17,8 @@ $requestedUserId = (int) ($_GET['user_id'] ?? $sessionUserId);
 $userId = $requestedUserId > 0 ? $requestedUserId : $sessionUserId;
 $userRole = (string) ($user['role'] ?? '');
 $isAdmin = $userRole === 'admin';
+$isManager = $userRole === 'manager';
+$canEditProfile = $isAdmin || ($isManager && $userId === $sessionUserId);
 
 $flashError = (string) ($_SESSION['flash_error'] ?? '');
 $flashSuccess = (string) ($_SESSION['flash_success'] ?? '');
@@ -27,6 +29,7 @@ $requiredProfileFields = [
     'paternal_surname' => 'Apellido paterno',
     'birth_date' => 'Fecha de nacimiento',
 ];
+$employeeClassOptions = ['BASE', 'CONFIANZA', 'CONTRATO', 'HIJO', 'INVITADO'];
 
 if ($userRole !== 'player' && $userRole !== 'manager' && $userRole !== 'admin') {
     clear_auth();
@@ -39,7 +42,7 @@ if ($userRole === 'player' && $requestedUserId !== $sessionUserId) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$isAdmin) {
+    if (!$canEditProfile) {
         $_SESSION['flash_error'] = 'No tienes permisos para editar este perfil.';
         redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
     }
@@ -102,6 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($phone !== null && !preg_match('/^[0-9+()\-\s]{7,20}$/', $phone)) {
         $errors[] = 'El teléfono debe contener únicamente números y símbolos válidos.';
+    }
+
+    if ($employeeClass !== null && !in_array($employeeClass, $employeeClassOptions, true)) {
+        $errors[] = 'La clase de empleado seleccionada no es válida.';
     }
 
     if ($employeeNumber !== null && !preg_match('/^[A-Za-z0-9\-]{1,30}$/', $employeeNumber)) {
@@ -245,43 +252,57 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
                         </select>
                     <?php else: ?>
                         <input type="text" readonly value="<?= htmlspecialchars($displayValue($teamName), ENT_QUOTES, 'UTF-8') ?>">
+                        <?php if ($canEditProfile): ?>
+                            <input type="hidden" name="team_id" value="<?= $profileTeamId > 0 ? (int) $profileTeamId : '' ?>">
+                        <?php endif; ?>
                     <?php endif; ?>
                 </label>
                 <label>Nombre *
-                    <input type="text" name="first_name" <?= $isAdmin ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['first_name'] ?? null) : $displayValue($profile['first_name'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="first_name" <?= $canEditProfile ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['first_name'] ?? null) : $displayValue($profile['first_name'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Apellido paterno *
-                    <input type="text" name="paternal_surname" <?= $isAdmin ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['paternal_surname'] ?? null) : $displayValue($profile['paternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="paternal_surname" <?= $canEditProfile ? 'required minlength="2" maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['paternal_surname'] ?? null) : $displayValue($profile['paternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Apellido materno
-                    <input type="text" name="maternal_surname" <?= $isAdmin ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['maternal_surname'] ?? null) : $displayValue($profile['maternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="maternal_surname" <?= $canEditProfile ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['maternal_surname'] ?? null) : $displayValue($profile['maternal_surname'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Fecha de nacimiento *
-                    <input type="date" name="birth_date" <?= $isAdmin ? 'required max="' . date('Y-m-d') . '"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['birth_date'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="date" name="birth_date" <?= $canEditProfile ? 'required max="' . date('Y-m-d') . '"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['birth_date'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>CURP
-                    <input type="text" name="curp" <?= $isAdmin ? 'maxlength="18" pattern="[A-Za-z]{4}[0-9]{6}[A-Za-z]{6}[A-Za-z0-9]{2}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['curp'] ?? null) : $displayValue($profile['curp'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="curp" <?= $canEditProfile ? 'maxlength="18" pattern="[A-Za-z]{4}[0-9]{6}[A-Za-z]{6}[A-Za-z0-9]{2}"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['curp'] ?? null) : $displayValue($profile['curp'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Teléfono
-                    <input type="tel" name="phone" <?= $isAdmin ? 'maxlength="20" pattern="[0-9+()\-\s]{7,20}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['phone'] ?? null) : $displayValue($profile['phone'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="tel" name="phone" <?= $canEditProfile ? 'maxlength="20" pattern="[0-9+()\-\s]{7,20}"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['phone'] ?? null) : $displayValue($profile['phone'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Número de jersey
-                    <input type="number" name="jersey_number" <?= $isAdmin ? 'min="0" max="999" step="1"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['jersey_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="number" name="jersey_number" <?= $canEditProfile ? 'min="0" max="999" step="1"' : 'readonly' ?> value="<?= htmlspecialchars($formValue($profile['jersey_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Posición
-                    <input type="text" name="position" <?= $isAdmin ? 'maxlength="50"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['position'] ?? null) : $displayValue($profile['position'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="position" <?= $canEditProfile ? 'maxlength="50"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['position'] ?? null) : $displayValue($profile['position'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Clase de empleado
-                    <input type="text" name="employee_class" <?= $isAdmin ? 'maxlength="50"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['employee_class'] ?? null) : $displayValue($profile['employee_class'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php if ($canEditProfile): ?>
+                        <select name="employee_class">
+                            <option value="" <?= $formValue($profile['employee_class'] ?? null) === '' ? 'selected' : '' ?>>No especificado</option>
+                            <?php foreach ($employeeClassOptions as $employeeClassOption): ?>
+                                <option value="<?= htmlspecialchars($employeeClassOption, ENT_QUOTES, 'UTF-8') ?>" <?= $formValue($profile['employee_class'] ?? null) === $employeeClassOption ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($employeeClassOption, ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <input type="text" readonly value="<?= htmlspecialchars($displayValue($profile['employee_class'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
                 </label>
                 <label>Número de empleado
-                    <input type="text" name="employee_number" <?= $isAdmin ? 'maxlength="30" pattern="[A-Za-z0-9\-]{1,30}"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['employee_number'] ?? null) : $displayValue($profile['employee_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="employee_number" <?= $canEditProfile ? 'maxlength="30" pattern="[A-Za-z0-9\-]{1,30}"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['employee_number'] ?? null) : $displayValue($profile['employee_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Afiliación ISSSTECALI
-                    <input type="text" name="isstecali_affiliation" <?= $isAdmin ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($isAdmin ? $formValue($profile['isstecali_affiliation'] ?? null) : $displayValue($profile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="isstecali_affiliation" <?= $canEditProfile ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['isstecali_affiliation'] ?? null) : $displayValue($profile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
             </fieldset>
-            <?php if ($isAdmin): ?>
+            <?php if ($canEditProfile): ?>
                 <div>
                     <button type="submit" class="btn btn--primary">Guardar perfil</button>
                 </div>
@@ -289,13 +310,6 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
         </form>
     </section>
 </main>
-<script>
-setTimeout(function () {
-    var flashes = document.querySelectorAll('.flash');
-    for (var i = 0; i < flashes.length; i++) {
-        flashes[i].style.display = 'none';
-    }
-}, 3000);
-</script>
+<script src="/baseball-tms/user/profile.js"></script>
 </body>
 </html>
