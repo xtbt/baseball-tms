@@ -25,6 +25,35 @@
     overflow-x: auto;
 }
 
+.user-photo {
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #f3f4f6;
+}
+
+.user-photo--table {
+    width: 46px;
+    height: 46px;
+}
+
+.user-photo--modal {
+    width: 160px;
+    height: 120px;
+}
+
+.user-photo-panel {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
 .status-pill {
     display: inline-block;
     padding: 4px 10px;

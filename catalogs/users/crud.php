@@ -65,6 +65,46 @@ $redirectList = static function (string $q, int $targetPage): void {
     redirect_to($url);
 };
 
+$hasPhotoUpload = static function (): bool {
+    if (!isset($_FILES['photo']) || !is_array($_FILES['photo'])) {
+        return false;
+    }
+    return (int) ($_FILES['photo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+};
+
+$uploadPhotoForUser = static function (int $targetUserId, string $token): array {
+    if (!isset($_FILES['photo']) || !is_array($_FILES['photo'])) {
+        return ['ok' => false, 'message' => 'No se recibió imagen.'];
+    }
+
+    if (!function_exists('curl_file_create')) {
+        return ['ok' => false, 'message' => 'La carga de imagen no está disponible en este servidor.'];
+    }
+
+    $tmpPath = (string) ($_FILES['photo']['tmp_name'] ?? '');
+    $originalName = (string) ($_FILES['photo']['name'] ?? ('user_' . $targetUserId . '.jpg'));
+    if ($tmpPath === '' || !is_uploaded_file($tmpPath)) {
+        return ['ok' => false, 'message' => 'Archivo de imagen inválido.'];
+    }
+
+    $mimeType = function_exists('mime_content_type') ? (string) mime_content_type($tmpPath) : 'image/jpeg';
+    if ($mimeType === '') {
+        $mimeType = 'image/jpeg';
+    }
+
+    $filePayload = ['photo' => curl_file_create($tmpPath, $mimeType, $originalName)];
+    $uploadResponse = api_request_multipart('POST', '/users/' . $targetUserId . '/photo', $token, $filePayload);
+
+    if (!empty($uploadResponse['ok'])) {
+        return ['ok' => true, 'message' => ''];
+    }
+
+    return [
+        'ok' => false,
+        'message' => (string) ($uploadResponse['body']['message'] ?? 'No se pudo guardar la imagen del usuario.'),
+    ];
+};
+
 $stringOrNull = static function (string $key): ?string {
     $value = trim((string) ($_POST[$key] ?? ''));
     return $value !== '' ? $value : null;
@@ -185,6 +225,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $redirectList($returnQ, $returnPage);
         }
 
+        if ($hasPhotoUpload()) {
+            $uploadResult = $uploadPhotoForUser($newUserId, $token);
+            if (empty($uploadResult['ok'])) {
+                $_SESSION['flash_error'] = 'Usuario creado pero no se pudo guardar la imagen: ' . (string) ($uploadResult['message'] ?? 'Error desconocido.');
+                $redirectList($returnQ, $returnPage);
+            }
+        }
+
         $_SESSION['flash_success'] = 'Usuario creado correctamente.';
         $redirectList($returnQ, $returnPage);
     }
@@ -224,6 +272,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($profileSaveResponse['ok'])) {
             $_SESSION['flash_error'] = 'Usuario actualizado pero no se pudo guardar el perfil.';
             $redirectList($returnQ, $returnPage);
+        }
+
+        if ($hasPhotoUpload()) {
+            $uploadResult = $uploadPhotoForUser($targetId, $token);
+            if (empty($uploadResult['ok'])) {
+                $_SESSION['flash_error'] = 'Usuario actualizado pero no se pudo guardar la imagen: ' . (string) ($uploadResult['message'] ?? 'Error desconocido.');
+                $redirectList($returnQ, $returnPage);
+            }
         }
 
         $_SESSION['flash_success'] = 'Usuario actualizado correctamente.';
@@ -285,6 +341,40 @@ $offset = 0;
 $batchSize = 200;
 $maxIterations = 50;
 $iterations = 0;
+$photoAbsolutePathByUserId = static function (int $targetUserId): string {
+    return __DIR__ . '/../../images/users/' . $targetUserId . '.jpg';
+};
+$defaultPhotoRelativePath = '/baseball-tms/images/users/no_image.jpg';
+$defaultPhotoAbsolutePath = __DIR__ . '/../../images/users/no_image.jpg';
+if (!is_file($defaultPhotoAbsolutePath)) {
+    $defaultPhotoRelativePath = '/baseball-tms/images/no_image.jpg';
+    $defaultPhotoAbsolutePath = __DIR__ . '/../../images/no_image.jpg';
+}
+$photoFingerprint = static function (string $absolutePath): string {
+    if (!is_file($absolutePath)) {
+        return '';
+    }
+    $hash = @sha1_file($absolutePath);
+    if ($hash !== false && $hash !== '') {
+        return $hash;
+    }
+    return (string) @filemtime($absolutePath);
+};
+$defaultPhotoUrl = $defaultPhotoRelativePath;
+if (is_file($defaultPhotoAbsolutePath)) {
+    $defaultPhotoUrl .= '?v=' . $photoFingerprint($defaultPhotoAbsolutePath);
+}
+$photoUrlByUserId = static function (int $targetUserId) use ($photoAbsolutePathByUserId, $defaultPhotoRelativePath, $defaultPhotoAbsolutePath, $photoFingerprint): string {
+    $relativePath = '/baseball-tms/images/users/' . $targetUserId . '.jpg';
+    $absolutePath = $photoAbsolutePathByUserId($targetUserId);
+    if (is_file($absolutePath)) {
+        return $relativePath . '?v=' . $photoFingerprint($absolutePath);
+    }
+    if (is_file($defaultPhotoAbsolutePath)) {
+        return $defaultPhotoRelativePath . '?v=' . $photoFingerprint($defaultPhotoAbsolutePath);
+    }
+    return $defaultPhotoRelativePath;
+};
 
 while ($iterations < $maxIterations) {
     $response = api_request('GET', '/users?limit=' . $batchSize . '&offset=' . $offset, $token);
@@ -307,6 +397,7 @@ while ($iterations < $maxIterations) {
             }
         }
         $row['profile'] = $profileData;
+        $row['photo_url'] = $photoUrlByUserId($rowId);
         $allUsers[] = $row;
     }
 
@@ -435,6 +526,7 @@ $formValue = static function ($value): string {
             <table class="table">
                 <thead>
                     <tr>
+                        <th>Foto</th>
                         <th>Correo</th>
                         <th>Nombre</th>
                         <th>Rol</th>
@@ -446,7 +538,7 @@ $formValue = static function ($value): string {
                 <tbody>
                     <?php if (empty($usersPage)): ?>
                         <tr>
-                            <td colspan="6">No hay usuarios para mostrar.</td>
+                            <td colspan="7">No hay usuarios para mostrar.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($usersPage as $row): ?>
@@ -456,8 +548,10 @@ $formValue = static function ($value): string {
                             $isActive = (int) ($row['is_active'] ?? 0) === 1;
                             $fullName = trim((string) ($rowProfile['first_name'] ?? '') . ' ' . (string) ($rowProfile['paternal_surname'] ?? '') . ' ' . (string) ($rowProfile['maternal_surname'] ?? ''));
                             $teamLabel = (string) ($teamsMap[(int) ($rowProfile['team_id'] ?? 0)] ?? 'Sin equipo');
+                            $rowPhotoUrl = (string) ($row['photo_url'] ?? $defaultPhotoRelativePath);
                             ?>
                             <tr>
+                                <td><img src="<?= htmlspecialchars($rowPhotoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de usuario" class="user-photo user-photo--table"></td>
                                 <td><?= htmlspecialchars((string) ($row['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($fullName !== '' ? $fullName : 'N/D', ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) ($row['role'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
@@ -496,7 +590,7 @@ $formValue = static function ($value): string {
     <div class="modal__backdrop" data-close-modal></div>
     <div class="modal__content" role="dialog" aria-modal="true" aria-labelledby="modal-create-title">
         <h3 id="modal-create-title">Nuevo usuario</h3>
-        <form method="post" action="/baseball-tms/catalogs/users/crud.php">
+        <form method="post" action="/baseball-tms/catalogs/users/crud.php" enctype="multipart/form-data">
             <input type="hidden" name="action" value="create">
             <input type="hidden" name="return_q" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="return_page" value="<?= $page ?>">
@@ -516,6 +610,12 @@ $formValue = static function ($value): string {
                     <input type="password" name="password" required>
                 </label>
             </fieldset>
+            <div class="user-photo-panel">
+                <img src="<?= htmlspecialchars($defaultPhotoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de usuario" class="user-photo user-photo--modal">
+                <label>Foto de usuario (.jpg, máximo 1600x1600 píxeles, 2MB)
+                    <input type="file" name="photo" accept=".jpg,.jpeg,image/jpeg">
+                </label>
+            </div>
             <fieldset>
                 <legend>Datos de perfil</legend>
                 <label>Equipo
@@ -578,12 +678,13 @@ $formValue = static function ($value): string {
     $rowId = (int) ($row['id'] ?? 0);
     $rowProfile = is_array($row['profile'] ?? null) ? $row['profile'] : [];
     $isActive = (int) ($row['is_active'] ?? 0) === 1;
+    $rowPhotoUrl = (string) ($row['photo_url'] ?? $defaultPhotoRelativePath);
     ?>
     <div class="modal" id="modal-detail-<?= $rowId ?>" hidden>
         <div class="modal__backdrop" data-close-modal></div>
         <div class="modal__content" role="dialog" aria-modal="true" aria-labelledby="modal-detail-title-<?= $rowId ?>">
             <h3 id="modal-detail-title-<?= $rowId ?>">Detalle de usuario #<?= $rowId ?></h3>
-            <form method="post" action="/baseball-tms/catalogs/users/crud.php">
+            <form method="post" action="/baseball-tms/catalogs/users/crud.php" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="<?= $rowId ?>">
                 <input type="hidden" name="return_q" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
@@ -603,6 +704,12 @@ $formValue = static function ($value): string {
                         </select>
                     </label>
                 </fieldset>
+                <div class="user-photo-panel">
+                    <img src="<?= htmlspecialchars($rowPhotoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de usuario" class="user-photo user-photo--modal">
+                    <label>Foto de usuario (.jpg, máximo 1600x1600 píxeles, 2MB)
+                        <input type="file" name="photo" accept=".jpg,.jpeg,image/jpeg">
+                    </label>
+                </div>
                 <fieldset>
                     <legend>Datos de perfil</legend>
                     <label>Equipo

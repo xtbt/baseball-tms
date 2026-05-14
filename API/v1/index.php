@@ -64,6 +64,7 @@ $router->get('/games/{id}', [GameController::class, 'show'], true);
 $router->put('/games/{id}', [GameController::class, 'update'], true);
 $router->delete('/games/{id}', [GameController::class, 'destroy'], true);
 $router->resource('/users', UserController::class, true);
+$router->post('/users/{id}/photo', [UserController::class, 'uploadPhoto'], true);
 $router->get('/users/{id}/profile', [ProfileController::class, 'showByUser'], true);
 $router->put('/users/{id}/profile', [ProfileController::class, 'upsertByUser'], true);
 $router->get('/standings', [StandingController::class, 'index'], true);
