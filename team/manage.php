@@ -22,6 +22,36 @@ $myProfileResponse = api_request('GET', '/users/' . (int) $user['id'] . '/profil
 $myProfile = $myProfileResponse['body']['data'] ?? [];
 $teamId = (int) ($_GET['team_id'] ?? ($myProfile['team_id'] ?? 0));
 
+$photoAbsolutePathByUserId = static function (int $targetUserId): string {
+    return __DIR__ . '/../images/users/' . $targetUserId . '.jpg';
+};
+$defaultPhotoRelativePath = '/baseball-tms/images/users/no_image.jpg';
+$defaultPhotoAbsolutePath = __DIR__ . '/../images/users/no_image.jpg';
+if (!is_file($defaultPhotoAbsolutePath)) {
+    $defaultPhotoRelativePath = '/baseball-tms/images/no_image.jpg';
+    $defaultPhotoAbsolutePath = __DIR__ . '/../images/no_image.jpg';
+}
+$photoFingerprint = static function (string $absolutePath): string {
+    if (!is_file($absolutePath)) {
+        return '';
+    }
+    $hash = @sha1_file($absolutePath);
+    if ($hash !== false && $hash !== '') {
+        return $hash;
+    }
+    return (string) @filemtime($absolutePath);
+};
+$photoUrlByUserId = static function (int $targetUserId) use ($photoAbsolutePathByUserId, $defaultPhotoRelativePath, $defaultPhotoAbsolutePath, $photoFingerprint): string {
+    $userPhotoPath = $photoAbsolutePathByUserId($targetUserId);
+    if (is_file($userPhotoPath)) {
+        return '/baseball-tms/images/users/' . $targetUserId . '.jpg?v=' . $photoFingerprint($userPhotoPath);
+    }
+    if (is_file($defaultPhotoAbsolutePath)) {
+        return $defaultPhotoRelativePath . '?v=' . $photoFingerprint($defaultPhotoAbsolutePath);
+    }
+    return $defaultPhotoRelativePath;
+};
+
 if ($teamId <= 0) {
     $_SESSION['flash_error'] = 'No hay equipo asociado para mostrar.';
     redirect_to('/baseball-tms/index.php');
@@ -56,6 +86,7 @@ foreach ($users as $candidateUser) {
         'name' => $name !== '' ? $name : 'N/D',
         'position' => (string) ($candidateProfile['position'] ?? 'N/D'),
         'jersey' => (string) ($candidateProfile['jersey_number'] ?? 'N/D'),
+        'photo_url' => $photoUrlByUserId($candidateId),
     ];
 }
 ?>
@@ -89,6 +120,7 @@ foreach ($users as $candidateUser) {
             <table class="table">
                 <thead>
                     <tr>
+                        <th>Foto</th>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Rol</th>
@@ -100,18 +132,19 @@ foreach ($users as $candidateUser) {
                 <tbody>
                     <?php if (empty($players)): ?>
                         <tr>
-                            <td colspan="6" class="text-muted">No hay jugadores registrados para este equipo.</td>
+                            <td colspan="7" class="text-muted">No hay jugadores registrados para este equipo.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($players as $player): ?>
                             <tr>
+                                <td><img src="<?= htmlspecialchars($player['photo_url'], ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($player['name'], ENT_QUOTES, 'UTF-8') ?>" class="user-photo user-photo--table"></td>
                                 <td><?= htmlspecialchars($player['name'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($player['email'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($player['role'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($player['position'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($player['jersey'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
-                                    <a class="btn btn--ghost" href="/baseball-tms/user/profile.php?user_id=<?= (int) $player['id'] ?>">Ver perfil</a>
+                                    <a class="btn btn--ghost" href="/baseball-tms/user/profile.php?user_id=<?= (int) $player['id'] ?>&from_team=1&team_id=<?= (int) $teamId ?>">Ver perfil</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

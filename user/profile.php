@@ -185,6 +185,40 @@ $formValue = static function ($value): string {
     return trim((string) $value);
 };
 
+$photoAbsolutePathByUserId = static function (int $targetUserId): string {
+    return __DIR__ . '/../images/users/' . $targetUserId . '.jpg';
+};
+$defaultPhotoRelativePath = '/baseball-tms/images/users/no_image.jpg';
+$defaultPhotoAbsolutePath = __DIR__ . '/../images/users/no_image.jpg';
+if (!is_file($defaultPhotoAbsolutePath)) {
+    $defaultPhotoRelativePath = '/baseball-tms/images/no_image.jpg';
+    $defaultPhotoAbsolutePath = __DIR__ . '/../images/no_image.jpg';
+}
+$photoFingerprint = static function (string $absolutePath): string {
+    if (!is_file($absolutePath)) {
+        return '';
+    }
+    $hash = @sha1_file($absolutePath);
+    if ($hash !== false && $hash !== '') {
+        return $hash;
+    }
+    return (string) @filemtime($absolutePath);
+};
+$profilePhotoUrl = $defaultPhotoRelativePath;
+$userPhotoPath = $photoAbsolutePathByUserId($userId);
+if (is_file($userPhotoPath)) {
+    $profilePhotoUrl = '/baseball-tms/images/users/' . $userId . '.jpg?v=' . $photoFingerprint($userPhotoPath);
+} elseif (is_file($defaultPhotoAbsolutePath)) {
+    $profilePhotoUrl = $defaultPhotoRelativePath . '?v=' . $photoFingerprint($defaultPhotoAbsolutePath);
+}
+
+$returnToTeam = isset($_GET['from_team']) && $_GET['from_team'] === '1' && $userRole === 'manager';
+$returnTeamId = (int) ($_GET['team_id'] ?? 0);
+$returnToTeamUrl = '';
+if ($returnToTeam && $returnTeamId > 0) {
+    $returnToTeamUrl = '/baseball-tms/team/manage.php?team_id=' . $returnTeamId;
+}
+
 $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Inactivo';
 ?>
 <!doctype html>
@@ -211,7 +245,13 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
 </header>
 <main class="container">
     <section class="card">
-        <h2>Mi perfil</h2>
+        <h2>Datos de registro</h2>
+        <?php if ($returnToTeamUrl !== ''): ?>
+            <p><a class="btn btn--ghost" href="<?= htmlspecialchars($returnToTeamUrl, ENT_QUOTES, 'UTF-8') ?>">Regresar a mi equipo</a></p>
+        <?php endif; ?>
+        <div class="user-photo-panel">
+            <img src="<?= htmlspecialchars($profilePhotoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de usuario" class="user-photo user-photo--modal">
+        </div>
         <?php if ($flashSuccess !== ''): ?>
             <div class="flash flash--ok"><?= htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
@@ -219,7 +259,7 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
             <div class="flash flash--error"><?= htmlspecialchars($flashError, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
         <p class="form-note">Los campos marcados con * son obligatorios.</p>
-        <form class="readonly-form" method="post" action="/baseball-tms/user/profile.php?user_id=<?= (int) $userId ?>">
+        <form class="readonly-form" method="post" action="/baseball-tms/user/profile.php?user_id=<?= (int) $userId ?><?= $returnToTeamUrl !== '' ? '&from_team=1&team_id=' . (int) $returnTeamId : '' ?>">
             <fieldset>
                 <legend>Datos de usuario</legend>
                 <label>ID de usuario
