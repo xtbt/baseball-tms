@@ -1,0 +1,122 @@
+.catalog-head {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.catalog-search {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.catalog-search input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-pill--active {
+    background: #e4f4e7;
+    color: #27663a;
+    border: 1px solid #badfc2;
+}
+
+.status-pill--inactive {
+    background: #fbe8e8;
+    color: #7f2727;
+    border: 1px solid #efc6c6;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pagination {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+}
+
+.modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal__content {
+    position: relative;
+    background: #fff;
+    width: min(760px, calc(100% - 24px));
+    margin: 48px auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+}
+
+.modal__content fieldset {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.modal__content label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.modal__content input,
+.modal__content select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font: inherit;
+}
+
+.modal__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+body.modal-open {
+    overflow: hidden;
+}

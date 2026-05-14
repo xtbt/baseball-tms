@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: May 13, 2026 at 09:33 PM
+-- Generation Time: May 13, 2026 at 11:15 PM
 -- Server version: 5.7.32
 -- PHP Version: 8.0.3
 
@@ -65,8 +65,8 @@ CREATE TABLE `categories` (
 
 INSERT INTO `categories` (`id`, `name`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 'Categoria A', 'Los pros', 1, '2026-05-13 14:05:12', '2026-05-13 14:05:12'),
-(2, 'Categoria B', 'Los mas o menos', 1, '2026-05-13 14:05:27', '2026-05-13 14:05:27'),
-(3, 'Categoria C', 'Los malos', 1, '2026-05-13 14:05:40', '2026-05-13 14:05:40');
+(2, 'Categoria B', 'Los regulares', 1, '2026-05-13 14:05:27', '2026-05-13 16:03:53'),
+(3, 'Categoria C', 'Los malos', 1, '2026-05-13 14:05:40', '2026-05-13 16:03:30');
 
 -- --------------------------------------------------------
 
@@ -165,7 +165,6 @@ CREATE TABLE `teams` (
   `id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `category_id` int(10) UNSIGNED NOT NULL,
-  `logo_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -175,10 +174,10 @@ CREATE TABLE `teams` (
 -- Dumping data for table `teams`
 --
 
-INSERT INTO `teams` (`id`, `name`, `category_id`, `logo_url`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Dodgers', 1, NULL, 1, '2026-05-13 14:07:01', '2026-05-13 14:07:01'),
-(2, 'Padres', 2, NULL, 1, '2026-05-13 14:07:14', '2026-05-13 14:07:14'),
-(3, 'Yanquis', 3, NULL, 1, '2026-05-13 14:07:23', '2026-05-13 14:07:23');
+INSERT INTO `teams` (`id`, `name`, `category_id`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Dodgers', 1, 1, '2026-05-13 14:07:01', '2026-05-13 14:07:01'),
+(2, 'Padres', 2, 1, '2026-05-13 14:07:14', '2026-05-13 14:07:14'),
+(3, 'Yanquis', 3, 1, '2026-05-13 14:07:23', '2026-05-13 14:07:23');
 
 -- --------------------------------------------------------
 
@@ -203,9 +202,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'jsanchez.1983@gmail.com', '$2y$10$d1attNAU9pIjq6MizhBRNOar8EzL1UOueFJUK3TNdgXWEH/hc0UQW', 'admin', 1, '2026-05-13 14:20:43', '2026-05-06 15:34:00', '2026-05-13 14:20:43'),
-(2, 'manager@sindicato.com', '$2y$10$4Swp15LcL32IHS/Qx5Wj6.RekBm8LWezMlNjnaatEx9VNi.cIkBnC', 'manager', 1, '2026-05-13 14:22:46', '2026-05-13 13:40:36', '2026-05-13 14:22:46'),
-(3, 'player@sindicato.com', '$2y$10$.3Bj7eyfSPA21HuFB.XAze3GrzgR99PS4VajUUTzYnw5d4AL9G7QC', 'player', 1, '2026-05-13 14:22:21', '2026-05-13 14:16:07', '2026-05-13 14:22:21');
+(1, 'jsanchez.1983@gmail.com', '$2y$10$d1attNAU9pIjq6MizhBRNOar8EzL1UOueFJUK3TNdgXWEH/hc0UQW', 'admin', 1, '2026-05-13 15:01:44', '2026-05-06 15:34:00', '2026-05-13 15:01:44'),
+(2, 'manager@sindicato.com', '$2y$10$4Swp15LcL32IHS/Qx5Wj6.RekBm8LWezMlNjnaatEx9VNi.cIkBnC', 'manager', 1, '2026-05-13 14:49:00', '2026-05-13 13:40:36', '2026-05-13 14:49:00'),
+(3, 'player@sindicato.com', '$2y$10$.3Bj7eyfSPA21HuFB.XAze3GrzgR99PS4VajUUTzYnw5d4AL9G7QC', 'player', 1, '2026-05-13 14:48:42', '2026-05-13 14:16:07', '2026-05-13 14:48:42');
 
 -- --------------------------------------------------------
 
@@ -239,7 +238,7 @@ CREATE TABLE `user_profiles` (
 
 INSERT INTO `user_profiles` (`id`, `user_id`, `team_id`, `first_name`, `paternal_surname`, `maternal_surname`, `birth_date`, `curp`, `phone`, `jersey_number`, `position`, `employee_class`, `employee_number`, `isstecali_affiliation`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, 'JONATHAN', 'SANCHEZ', NULL, '1983-05-07', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-13 13:36:14', '2026-05-13 13:36:14'),
-(2, 2, NULL, 'FULANO', 'DE TAL', NULL, '1990-01-01', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-13 14:10:01', '2026-05-13 14:25:32'),
+(2, 2, 3, 'FULANO', 'DE TAL', NULL, '1990-01-01', NULL, NULL, NULL, NULL, 'BASE', NULL, NULL, '2026-05-13 14:10:01', '2026-05-13 15:01:00'),
 (3, 3, 3, 'PLAYER', 'TEST', NULL, '2001-05-01', NULL, NULL, 1, 'PITCHER', NULL, NULL, NULL, '2026-05-13 14:19:13', '2026-05-13 14:19:13');
 
 -- --------------------------------------------------------
@@ -276,7 +275,11 @@ INSERT INTO `user_tokens` (`id`, `user_id`, `token`, `device_name`, `device_type
 (7, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6IjBkNDMyYmI1MjFlOWU5M2EyZDQyNzRhNDc5OTE2Mjc3IiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA2Nzg5LCJleHAiOjE3Nzg3MTM5ODl9.Tnea2YGdYbhBio-aMEZ66b6dqO7fbBOm18aT96vg7Eg', 'Web Frontend', 'web', '::1', '2026-05-13 16:13:09', '2026-05-13 14:20:36', 1, '2026-05-13 14:13:09'),
 (8, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6ImY2NzU4MmM0YjQwNDg1NDNkNzYzNmE2YWMyOWU0ZGUyIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA3MjQzLCJleHAiOjE3Nzg3MTQ0NDN9.MZPNLplxAr-fi7ecXumy2NjJdTGbwu77lC6xtUPCj0c', 'Web Frontend', 'web', '::1', '2026-05-13 16:20:43', '2026-05-13 14:21:31', 1, '2026-05-13 14:20:43'),
 (9, 3, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImp0aSI6IjVhZjQxMDZhNWEzZTFlM2M3NmJhYjZkZmRjODhkZWI2IiwiZW1haWwiOiJwbGF5ZXJAc2luZGljYXRvLmNvbSIsInJvbGUiOiJwbGF5ZXIiLCJpc3MiOiJiYXNlYmFsbC10bXMiLCJhdWQiOiJiYXNlYmFsbC10bXMtY2xpZW50cyIsImlhdCI6MTc3ODcwNzM0MSwiZXhwIjoxNzc4NzE0NTQxfQ.hGuTUqwjNe6q1Odph6nxbH12pmuQg_ulSN6y6J8VfEM', 'Web Frontend', 'web', '::1', '2026-05-13 16:22:21', '2026-05-13 14:22:40', 1, '2026-05-13 14:22:21'),
-(10, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6IjA2OTFlZTJkY2U5ZDhhZmFhMGRmYTJmZDRkMmUwMjBhIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA3MzY2LCJleHAiOjE3Nzg3MTQ1NjZ9.WWB1KeXLrNYS18JAHyVSXTi55Yzw79GGHmGIpJl5VKI', 'Web Frontend', 'web', '::1', '2026-05-13 16:22:46', '2026-05-13 14:25:32', 0, '2026-05-13 14:22:46');
+(10, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6IjA2OTFlZTJkY2U5ZDhhZmFhMGRmYTJmZDRkMmUwMjBhIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA3MzY2LCJleHAiOjE3Nzg3MTQ1NjZ9.WWB1KeXLrNYS18JAHyVSXTi55Yzw79GGHmGIpJl5VKI', 'Web Frontend', 'web', '::1', '2026-05-13 16:22:46', '2026-05-13 14:45:47', 1, '2026-05-13 14:22:46'),
+(11, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6IjU2Mzk0ODNmZmRlMjg3Mjg1ZjkxYmU1Mzc5NDJmMGFmIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA4NzUyLCJleHAiOjE3Nzg3MTU5NTJ9.VaVil0waeQjcTyRfSd6a7LPGMe1MJHq4FUv2jg9uCs8', 'Web Frontend', 'web', '::1', '2026-05-13 16:45:52', '2026-05-13 14:48:37', 1, '2026-05-13 14:45:52'),
+(12, 3, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImp0aSI6IjUyYzE3YjNkYTRmYjQ3NzU4ZTE3ZDYzMDMyMGUzYjFlIiwiZW1haWwiOiJwbGF5ZXJAc2luZGljYXRvLmNvbSIsInJvbGUiOiJwbGF5ZXIiLCJpc3MiOiJiYXNlYmFsbC10bXMiLCJhdWQiOiJiYXNlYmFsbC10bXMtY2xpZW50cyIsImlhdCI6MTc3ODcwODkyMiwiZXhwIjoxNzc4NzE2MTIyfQ.jZh9i7gJyusy5pn9SFE37oAjAEXEB87nFB2zNeUaQvA', 'Web Frontend', 'web', '::1', '2026-05-13 16:48:42', '2026-05-13 14:48:50', 1, '2026-05-13 14:48:42'),
+(13, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6ImE4NmNjMTdkM2EwMDdiYjUzNTIwNzc2Njc2NGEwY2QwIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA4OTQwLCJleHAiOjE3Nzg3MTYxNDB9.n2OFe54funOJNBqFIVqfp4OjJnwavXKdNtjnLusn7BI', 'Web Frontend', 'web', '::1', '2026-05-13 16:49:00', '2026-05-13 15:01:39', 1, '2026-05-13 14:49:00'),
+(14, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6Ijc2NTMxYTEwZDkzZmE4YmU0NjIyMjg5ODgzZTdjNjgzIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA5NzA0LCJleHAiOjE3Nzg3MTY5MDR9.smRsojAfsDA7GwayLypPUGVTgQCInklW0wCDv025ZC4', 'Web Frontend', 'web', '::1', '2026-05-13 17:01:44', '2026-05-13 16:13:00', 0, '2026-05-13 15:01:44');
 
 -- --------------------------------------------------------
 
@@ -455,7 +458,7 @@ ALTER TABLE `user_profiles`
 -- AUTO_INCREMENT for table `user_tokens`
 --
 ALTER TABLE `user_tokens`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `venues`
