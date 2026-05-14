@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: May 13, 2026 at 11:15 PM
+-- Generation Time: May 14, 2026 at 05:56 AM
 -- Server version: 5.7.32
 -- PHP Version: 8.0.3
 
@@ -85,7 +85,7 @@ CREATE TABLE `games` (
   `home_score` tinyint(3) UNSIGNED DEFAULT NULL,
   `away_score` tinyint(3) UNSIGNED DEFAULT NULL,
   `innings_played` tinyint(3) UNSIGNED DEFAULT NULL,
-  `status` enum('scheduled','in_progress','completed','cancelled','postponed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'scheduled',
+  `status` enum('PROGRAMADO','FINALIZADO','CANCELADO','POSPUESTO') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PROGRAMADO',
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int(10) UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -177,7 +177,9 @@ CREATE TABLE `teams` (
 INSERT INTO `teams` (`id`, `name`, `category_id`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 'Dodgers', 1, 1, '2026-05-13 14:07:01', '2026-05-13 14:07:01'),
 (2, 'Padres', 2, 1, '2026-05-13 14:07:14', '2026-05-13 14:07:14'),
-(3, 'Yanquis', 3, 1, '2026-05-13 14:07:23', '2026-05-13 14:07:23');
+(3, 'Gigantes', 3, 1, '2026-05-13 14:07:23', '2026-05-13 16:22:39'),
+(4, 'Yanquis', 1, 1, '2026-05-13 16:22:49', '2026-05-13 16:22:49'),
+(5, 'Toros', 2, 1, '2026-05-13 16:23:28', '2026-05-13 16:23:28');
 
 -- --------------------------------------------------------
 
@@ -202,9 +204,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'jsanchez.1983@gmail.com', '$2y$10$d1attNAU9pIjq6MizhBRNOar8EzL1UOueFJUK3TNdgXWEH/hc0UQW', 'admin', 1, '2026-05-13 15:01:44', '2026-05-06 15:34:00', '2026-05-13 15:01:44'),
+(1, 'jsanchez.1983@gmail.com', '$2y$10$d1attNAU9pIjq6MizhBRNOar8EzL1UOueFJUK3TNdgXWEH/hc0UQW', 'admin', 1, '2026-05-13 22:10:36', '2026-05-06 15:34:00', '2026-05-13 22:10:36'),
 (2, 'manager@sindicato.com', '$2y$10$4Swp15LcL32IHS/Qx5Wj6.RekBm8LWezMlNjnaatEx9VNi.cIkBnC', 'manager', 1, '2026-05-13 14:49:00', '2026-05-13 13:40:36', '2026-05-13 14:49:00'),
-(3, 'player@sindicato.com', '$2y$10$.3Bj7eyfSPA21HuFB.XAze3GrzgR99PS4VajUUTzYnw5d4AL9G7QC', 'player', 1, '2026-05-13 14:48:42', '2026-05-13 14:16:07', '2026-05-13 14:48:42');
+(3, 'player@sindicato.com', '$2y$10$.3Bj7eyfSPA21HuFB.XAze3GrzgR99PS4VajUUTzYnw5d4AL9G7QC', 'player', 1, '2026-05-13 14:48:42', '2026-05-13 14:16:07', '2026-05-13 14:48:42'),
+(4, 'player2@sindicato.com', '$2y$10$6VUz7TmqQRXrQdMfX6PlFePsE/lNB2auNNkQieNQMPocaXm/b0eMu', 'player', 1, '2026-05-13 22:10:27', '2026-05-13 22:08:46', '2026-05-13 22:11:03');
 
 -- --------------------------------------------------------
 
@@ -239,7 +242,8 @@ CREATE TABLE `user_profiles` (
 INSERT INTO `user_profiles` (`id`, `user_id`, `team_id`, `first_name`, `paternal_surname`, `maternal_surname`, `birth_date`, `curp`, `phone`, `jersey_number`, `position`, `employee_class`, `employee_number`, `isstecali_affiliation`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, 'JONATHAN', 'SANCHEZ', NULL, '1983-05-07', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-13 13:36:14', '2026-05-13 13:36:14'),
 (2, 2, 3, 'FULANO', 'DE TAL', NULL, '1990-01-01', NULL, NULL, NULL, NULL, 'BASE', NULL, NULL, '2026-05-13 14:10:01', '2026-05-13 15:01:00'),
-(3, 3, 3, 'PLAYER', 'TEST', NULL, '2001-05-01', NULL, NULL, 1, 'PITCHER', NULL, NULL, NULL, '2026-05-13 14:19:13', '2026-05-13 14:19:13');
+(3, 3, 3, 'PLAYER', 'TEST', NULL, '2001-05-01', NULL, NULL, 1, 'PITCHER', NULL, NULL, NULL, '2026-05-13 14:19:13', '2026-05-13 14:19:13'),
+(4, 4, NULL, 'JUGADOR', 'DOS', NULL, '2000-01-01', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-13 22:08:46', '2026-05-13 22:08:46');
 
 -- --------------------------------------------------------
 
@@ -279,7 +283,12 @@ INSERT INTO `user_tokens` (`id`, `user_id`, `token`, `device_name`, `device_type
 (11, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6IjU2Mzk0ODNmZmRlMjg3Mjg1ZjkxYmU1Mzc5NDJmMGFmIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA4NzUyLCJleHAiOjE3Nzg3MTU5NTJ9.VaVil0waeQjcTyRfSd6a7LPGMe1MJHq4FUv2jg9uCs8', 'Web Frontend', 'web', '::1', '2026-05-13 16:45:52', '2026-05-13 14:48:37', 1, '2026-05-13 14:45:52'),
 (12, 3, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImp0aSI6IjUyYzE3YjNkYTRmYjQ3NzU4ZTE3ZDYzMDMyMGUzYjFlIiwiZW1haWwiOiJwbGF5ZXJAc2luZGljYXRvLmNvbSIsInJvbGUiOiJwbGF5ZXIiLCJpc3MiOiJiYXNlYmFsbC10bXMiLCJhdWQiOiJiYXNlYmFsbC10bXMtY2xpZW50cyIsImlhdCI6MTc3ODcwODkyMiwiZXhwIjoxNzc4NzE2MTIyfQ.jZh9i7gJyusy5pn9SFE37oAjAEXEB87nFB2zNeUaQvA', 'Web Frontend', 'web', '::1', '2026-05-13 16:48:42', '2026-05-13 14:48:50', 1, '2026-05-13 14:48:42'),
 (13, 2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImp0aSI6ImE4NmNjMTdkM2EwMDdiYjUzNTIwNzc2Njc2NGEwY2QwIiwiZW1haWwiOiJtYW5hZ2VyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoibWFuYWdlciIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA4OTQwLCJleHAiOjE3Nzg3MTYxNDB9.n2OFe54funOJNBqFIVqfp4OjJnwavXKdNtjnLusn7BI', 'Web Frontend', 'web', '::1', '2026-05-13 16:49:00', '2026-05-13 15:01:39', 1, '2026-05-13 14:49:00'),
-(14, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6Ijc2NTMxYTEwZDkzZmE4YmU0NjIyMjg5ODgzZTdjNjgzIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA5NzA0LCJleHAiOjE3Nzg3MTY5MDR9.smRsojAfsDA7GwayLypPUGVTgQCInklW0wCDv025ZC4', 'Web Frontend', 'web', '::1', '2026-05-13 17:01:44', '2026-05-13 16:13:00', 0, '2026-05-13 15:01:44');
+(14, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6Ijc2NTMxYTEwZDkzZmE4YmU0NjIyMjg5ODgzZTdjNjgzIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzA5NzA0LCJleHAiOjE3Nzg3MTY5MDR9.smRsojAfsDA7GwayLypPUGVTgQCInklW0wCDv025ZC4', 'Web Frontend', 'web', '::1', '2026-05-13 17:01:44', '2026-05-13 16:45:36', 0, '2026-05-13 15:01:44'),
+(15, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6IjBiNGQ5NDdjYzkzMDVmYjczYmE4YjdmMzVlNTk3NjliIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzM1MTkxLCJleHAiOjE3Nzg3NDIzOTF9.UQDeaHfO7BsUquFLhuPHEHcuv08DbemYqKIdncItkkA', 'Web Frontend', 'web', '::1', '2026-05-14 00:06:31', '2026-05-13 22:08:59', 1, '2026-05-13 22:06:31'),
+(16, 4, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsImp0aSI6ImNhNzFlNzhlOGQxNDExYTg3ZTNjMGJiZTE0ZTQyM2FlIiwiZW1haWwiOiJwbGF5ZXIyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoicGxheWVyIiwiaXNzIjoiYmFzZWJhbGwtdG1zIiwiYXVkIjoiYmFzZWJhbGwtdG1zLWNsaWVudHMiLCJpYXQiOjE3Nzg3MzUzNTAsImV4cCI6MTc3ODc0MjU1MH0.ftShYVHunw37RB1U2DWPPEgnMLJECNQJzjjZ6530O8o', 'Web Frontend', 'web', '::1', '2026-05-14 00:09:10', '2026-05-13 22:09:49', 1, '2026-05-13 22:09:10'),
+(17, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6ImM2MDcyMGZmYTFmYjlmMWJmNTcxZGVhZDAxMzE2MWFjIiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzM1Mzk5LCJleHAiOjE3Nzg3NDI1OTl9.2rT-sb4fsej-vqRiOY2OmoKtSklE_4JFobsue98EMUU', 'Web Frontend', 'web', '::1', '2026-05-14 00:09:59', '2026-05-13 22:10:14', 1, '2026-05-13 22:09:59'),
+(18, 4, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsImp0aSI6ImQ3OTc4OWU2NzRlNDIzNjNlYzJjYTBjOWIxMDA3MDZiIiwiZW1haWwiOiJwbGF5ZXIyQHNpbmRpY2F0by5jb20iLCJyb2xlIjoicGxheWVyIiwiaXNzIjoiYmFzZWJhbGwtdG1zIiwiYXVkIjoiYmFzZWJhbGwtdG1zLWNsaWVudHMiLCJpYXQiOjE3Nzg3MzU0MjcsImV4cCI6MTc3ODc0MjYyN30.OcjX75ogIDU1NW7l8Z_0ApwtUPBCKHMyR43GFIFK9e8', 'Web Frontend', 'web', '::1', '2026-05-14 00:10:27', '2026-05-13 22:10:30', 1, '2026-05-13 22:10:27'),
+(19, 1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImp0aSI6ImQ4ODhhZGIwZjAzYjUwYWQyYTEwY2NmMDM0ZWJlMmY1IiwiZW1haWwiOiJqc2FuY2hlei4xOTgzQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImJhc2ViYWxsLXRtcyIsImF1ZCI6ImJhc2ViYWxsLXRtcy1jbGllbnRzIiwiaWF0IjoxNzc4NzM1NDM2LCJleHAiOjE3Nzg3NDI2MzZ9.BwyGiFzuOcoRxIIhkHshGzfg3qUEVoUrzNJLjg_AQLU', 'Web Frontend', 'web', '::1', '2026-05-14 00:10:36', '2026-05-13 22:26:05', 0, '2026-05-13 22:10:36');
 
 -- --------------------------------------------------------
 
@@ -440,25 +449,25 @@ ALTER TABLE `standings`
 -- AUTO_INCREMENT for table `teams`
 --
 ALTER TABLE `teams`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `user_profiles`
 --
 ALTER TABLE `user_profiles`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `user_tokens`
 --
 ALTER TABLE `user_tokens`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `venues`

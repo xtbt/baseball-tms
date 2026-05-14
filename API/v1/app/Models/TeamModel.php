@@ -9,7 +9,7 @@ use App\Core\BaseModel;
 final class TeamModel extends BaseModel
 {
     protected $table = 'teams';
-    protected $fillable = ['name', 'category_id', 'logo_url', 'is_active'];
+    protected $fillable = ['name', 'category_id', 'is_active'];
 
     public function create(array $data): int
     {
