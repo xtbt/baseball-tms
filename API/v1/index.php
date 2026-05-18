@@ -19,6 +19,17 @@ spl_autoload_register(function (string $class): void {
 
 $config = require __DIR__ . '/config/app.php';
 
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+header('Vary: Origin');
+header('Access-Control-Allow-Origin: ' . $origin);
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, X-Requested-With');
+header('Access-Control-Max-Age: 86400');
+if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;

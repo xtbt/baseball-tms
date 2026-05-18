@@ -36,12 +36,17 @@ final class Request
     public function header(string $key): ?string
     {
         $headers = function_exists('getallheaders') ? getallheaders() : [];
+        if (!$headers && function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+        }
         foreach ($headers as $name => $value) {
             if (strcasecmp($name, $key) === 0) {
                 return is_array($value) ? null : $value;
             }
         }
-        return null;
+        $serverKey = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
+        $value = $_SERVER[$serverKey] ?? ($_SERVER['REDIRECT_' . $serverKey] ?? null);
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     public function query(string $key, $default = null)

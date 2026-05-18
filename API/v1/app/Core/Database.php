@@ -22,6 +22,10 @@ final class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+        date_default_timezone_set('America/Tijuana');
+        $offset = (new \DateTime('now', new \DateTimeZone('America/Tijuana')))->format('P');
+        $stmt = self::$instance->prepare('SET time_zone = :timezone');
+        $stmt->execute(['timezone' => $offset]);
         return self::$instance;
     }
 }

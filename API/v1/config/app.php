@@ -7,7 +7,7 @@ return [
         'name' => getenv('APP_NAME') ?: 'Baseball TMS API',
         'env' => getenv('APP_ENV') ?: 'local',
         'debug' => (bool) (getenv('APP_DEBUG') ?: true),
-        'timezone' => getenv('APP_TIMEZONE') ?: 'America/Tijuana',
+        'timezone' => 'America/Tijuana',
     ],
     'database' => [
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
