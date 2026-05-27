@@ -773,6 +773,7 @@ $formValue = static function ($value): string {
                 </fieldset>
                 <div class="modal__actions">
                     <button type="button" class="btn btn--ghost" data-close-modal>Cerrar</button>
+                    <a class="btn btn--ghost" href="/baseball-tms/catalogs/users/credential.php?id=<?= $rowId ?>" target="_blank" rel="noopener">Ver Credencial</a>
                     <button type="submit" class="btn btn--primary">Guardar cambios</button>
                 </div>
             </form>
