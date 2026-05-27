@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $position = $stringOrNull('position');
     $employeeClass = $stringOrNull('employee_class');
     $employeeNumber = $stringOrNull('employee_number');
+    $employeeArea = $stringOrNull('employee_area');
     $isstecaliAffiliation = $stringOrNull('isstecali_affiliation');
 
     $teamIdRaw = trim((string) ($_POST['team_id'] ?? ''));
@@ -132,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'position' => $position,
         'employee_class' => $employeeClass,
         'employee_number' => $employeeNumber,
+        'employee_area' => $employeeArea,
         'isstecali_affiliation' => $isstecaliAffiliation,
     ];
 
@@ -337,6 +339,9 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
                 </label>
                 <label>Número de empleado
                     <input type="text" name="employee_number" <?= $canEditProfile ? 'maxlength="30" pattern="[A-Za-z0-9\-]{1,30}"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['employee_number'] ?? null) : $displayValue($profile['employee_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Área de trabajo
+                    <input type="text" name="employee_area" <?= $canEditProfile ? 'maxlength="60"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['employee_area'] ?? null) : $displayValue($profile['employee_area'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
                 <label>Afiliación ISSSTECALI
                     <input type="text" name="isstecali_affiliation" <?= $canEditProfile ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['isstecali_affiliation'] ?? null) : $displayValue($profile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">

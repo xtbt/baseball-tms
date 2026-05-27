@@ -120,6 +120,7 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
     $positionRaw = trim((string) ($_POST['position'] ?? ''));
     $employeeClassRaw = trim((string) ($_POST['employee_class'] ?? ''));
     $employeeNumberRaw = trim((string) ($_POST['employee_number'] ?? ''));
+    $employeeAreaRaw = trim((string) ($_POST['employee_area'] ?? ''));
     $isstecaliAffiliationRaw = trim((string) ($_POST['isstecali_affiliation'] ?? ''));
 
     $teamIdRaw = trim((string) ($_POST['team_id'] ?? ''));
@@ -173,6 +174,7 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
         'position' => $positionRaw !== '' ? $positionRaw : null,
         'employee_class' => $employeeClassRaw !== '' ? $employeeClassRaw : null,
         'employee_number' => $employeeNumberRaw !== '' ? $employeeNumberRaw : null,
+        'employee_area' => $employeeAreaRaw !== '' ? $employeeAreaRaw : null,
         'isstecali_affiliation' => $isstecaliAffiliationRaw !== '' ? $isstecaliAffiliationRaw : null,
     ];
 };
@@ -661,6 +663,9 @@ $formValue = static function ($value): string {
                 <label>Número de empleado
                     <input type="text" name="employee_number" maxlength="30">
                 </label>
+                <label>Área de trabajo
+                    <input type="text" name="employee_area" maxlength="60">
+                </label>
                 <label>Afiliación ISSSTECALI
                     <input type="text" name="isstecali_affiliation" maxlength="100">
                 </label>
@@ -758,6 +763,9 @@ $formValue = static function ($value): string {
                     </label>
                     <label>Número de empleado
                         <input type="text" name="employee_number" maxlength="30" value="<?= htmlspecialchars($formValue($rowProfile['employee_number'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    </label>
+                    <label>Área de trabajo
+                        <input type="text" name="employee_area" maxlength="60" value="<?= htmlspecialchars($formValue($rowProfile['employee_area'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                     </label>
                     <label>Afiliación ISSSTECALI
                         <input type="text" name="isstecali_affiliation" maxlength="100" value="<?= htmlspecialchars($formValue($rowProfile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
