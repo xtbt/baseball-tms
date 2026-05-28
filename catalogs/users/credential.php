@@ -86,6 +86,7 @@ if (is_file($photoAbsolutePath)) {
 }
 
 $logoUrl = '/baseball-tms/assets/logo/sindicato.jpg';
+$sindicatoUrl = '/baseball-tms/assets/logo/sutspemidbc.jpg';
 ?>
 <!doctype html>
 <html lang="es">
@@ -104,7 +105,7 @@ $logoUrl = '/baseball-tms/assets/logo/sindicato.jpg';
     <div class="card-wrapper">
         <section class="credential credential-front">
             <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
-            <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del torneo" class="front-logo">
+            <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del sindicato" class="front-logo">
             <div class="front-fields">
                 <div class="field"><span class="field-label">EQUIPO</span><span class="field-value"><?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?></span></div>
                 <div class="field"><span class="field-label">CATEGORÍA</span><span class="field-value"><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?></span></div>
@@ -116,7 +117,7 @@ $logoUrl = '/baseball-tms/assets/logo/sindicato.jpg';
 
     <div class="card-wrapper">
         <section class="credential credential-back">
-            <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del torneo" class="back-logo">
+            <img src="<?= htmlspecialchars($sindicatoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del torneo" class="back-logo">
         </section>
     </div>
 </div>
