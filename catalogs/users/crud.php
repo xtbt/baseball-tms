@@ -338,11 +338,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $redirectList($returnQ, $returnPage);
 }
 
-$allUsers = [];
-$offset = 0;
-$batchSize = 200;
-$maxIterations = 50;
-$iterations = 0;
 $photoAbsolutePathByUserId = static function (int $targetUserId): string {
     return __DIR__ . '/../../images/users/' . $targetUserId . '.jpg';
 };
@@ -378,72 +373,45 @@ $photoUrlByUserId = static function (int $targetUserId) use ($photoAbsolutePathB
     return $defaultPhotoRelativePath;
 };
 
-while ($iterations < $maxIterations) {
-    $response = api_request('GET', '/users?limit=' . $batchSize . '&offset=' . $offset, $token);
-    $chunk = $response['body']['data'] ?? [];
-    if (!is_array($chunk) || empty($chunk)) {
-        break;
+$fetchUsersPage = static function (int $currentPage, int $perPageValue, string $searchValue, string $authToken): array {
+    $params = [
+        'include_profile' => 1,
+        'limit' => $perPageValue,
+        'offset' => max(0, ($currentPage - 1) * $perPageValue),
+    ];
+    if ($searchValue !== '') {
+        $params['q'] = $searchValue;
     }
 
-    foreach ($chunk as $row) {
-        if (!is_array($row)) {
-            continue;
-        }
-        $rowId = (int) ($row['id'] ?? 0);
-        $profileData = [];
-        if ($rowId > 0) {
-            $profileByUserResponse = api_request('GET', '/users/' . $rowId . '/profile', $token);
-            $profileByUser = $profileByUserResponse['body']['data'] ?? [];
-            if (is_array($profileByUser)) {
-                $profileData = $profileByUser;
-            }
-        }
-        $row['profile'] = $profileData;
-        $row['photo_url'] = $photoUrlByUserId($rowId);
-        $allUsers[] = $row;
-    }
+    $response = api_request('GET', '/users?' . http_build_query($params), $authToken);
+    $data = $response['body']['data'] ?? [];
+    $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+    $meta = is_array($data['meta'] ?? null) ? $data['meta'] : [];
 
-    if (count($chunk) < $batchSize) {
-        break;
-    }
+    return [
+        'items' => $items,
+        'total' => max(0, (int) ($meta['total'] ?? 0)),
+    ];
+};
 
-    $offset += $batchSize;
-    $iterations++;
-}
-
-if ($search !== '') {
-    $needle = strtolower($search);
-    $allUsers = array_values(array_filter($allUsers, static function (array $item) use ($needle, $teamsMap): bool {
-        $profileItem = is_array($item['profile'] ?? null) ? $item['profile'] : [];
-        $teamNameFilter = strtolower((string) ($teamsMap[(int) ($profileItem['team_id'] ?? 0)] ?? ''));
-        $fields = [
-            strtolower((string) ($item['email'] ?? '')),
-            strtolower((string) ($item['role'] ?? '')),
-            strtolower((string) ($profileItem['first_name'] ?? '')),
-            strtolower((string) ($profileItem['paternal_surname'] ?? '')),
-            strtolower((string) ($profileItem['maternal_surname'] ?? '')),
-            $teamNameFilter,
-        ];
-        foreach ($fields as $field) {
-            if ($field !== '' && strpos($field, $needle) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }));
-}
-
-usort($allUsers, static function (array $a, array $b): int {
-    return ((int) ($b['id'] ?? 0)) <=> ((int) ($a['id'] ?? 0));
-});
-
-$totalItems = count($allUsers);
+$pageData = $fetchUsersPage($page, $perPage, $search, $token);
+$totalItems = $pageData['total'];
 $totalPages = max(1, (int) ceil($totalItems / $perPage));
 if ($page > $totalPages) {
     $page = $totalPages;
+    $pageData = $fetchUsersPage($page, $perPage, $search, $token);
 }
-$start = ($page - 1) * $perPage;
-$usersPage = array_slice($allUsers, $start, $perPage);
+
+$usersPage = [];
+foreach ($pageData['items'] as $row) {
+    if (!is_array($row)) {
+        continue;
+    }
+    $rowId = (int) ($row['id'] ?? 0);
+    $row['profile'] = is_array($row['profile'] ?? null) ? $row['profile'] : [];
+    $row['photo_url'] = $photoUrlByUserId($rowId);
+    $usersPage[] = $row;
+}
 
 $queryForPage = static function (int $targetPage, string $q): string {
     $params = [];

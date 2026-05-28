@@ -29,13 +29,62 @@ final class UserController extends CrudController
 
     public function index(): void
     {
-        $limit = (int) $this->request->query('limit', 100);
-        $offset = (int) $this->request->query('offset', 0);
-        $rows = $this->model->all($limit, $offset);
-        foreach ($rows as &$row) {
-            unset($row['password_hash']);
+        $limit = max(1, min(200, (int) $this->request->query('limit', 100)));
+        $offset = max(0, (int) $this->request->query('offset', 0));
+        $includeProfile = (int) $this->request->query('include_profile', 0) === 1;
+
+        if (!$includeProfile) {
+            $rows = $this->model->all($limit, $offset);
+            foreach ($rows as &$row) {
+                unset($row['password_hash']);
+            }
+            $this->ok($rows);
         }
-        $this->ok($rows);
+
+        $query = trim((string) $this->request->query('q', ''));
+        $rows = $this->model->listWithProfile($limit, $offset, $query);
+        $items = [];
+        foreach ($rows as $row) {
+            $profile = null;
+            if (!empty($row['profile_id'])) {
+                $profile = [
+                    'id' => (int) $row['profile_id'],
+                    'team_id' => isset($row['team_id']) ? (int) $row['team_id'] : null,
+                    'first_name' => $row['first_name'] ?? null,
+                    'paternal_surname' => $row['paternal_surname'] ?? null,
+                    'maternal_surname' => $row['maternal_surname'] ?? null,
+                    'birth_date' => $row['birth_date'] ?? null,
+                    'curp' => $row['curp'] ?? null,
+                    'phone' => $row['phone'] ?? null,
+                    'jersey_number' => isset($row['jersey_number']) ? (int) $row['jersey_number'] : null,
+                    'position' => $row['position'] ?? null,
+                    'employee_class' => $row['employee_class'] ?? null,
+                    'employee_number' => $row['employee_number'] ?? null,
+                    'employee_area' => $row['employee_area'] ?? null,
+                    'isstecali_affiliation' => $row['isstecali_affiliation'] ?? null,
+                    'team_name' => $row['team_name'] ?? null,
+                ];
+            }
+
+            $items[] = [
+                'id' => (int) $row['id'],
+                'email' => (string) ($row['email'] ?? ''),
+                'role' => (string) ($row['role'] ?? ''),
+                'is_active' => isset($row['is_active']) ? (int) $row['is_active'] : 0,
+                'last_login_at' => $row['last_login_at'] ?? null,
+                'profile' => $profile,
+            ];
+        }
+
+        $total = $this->model->countWithProfile($query);
+        $this->ok([
+            'items' => $items,
+            'meta' => [
+                'limit' => $limit,
+                'offset' => $offset,
+                'total' => $total,
+            ],
+        ]);
     }
 
     public function uploadPhoto(): void

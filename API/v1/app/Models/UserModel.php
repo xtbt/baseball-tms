@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Core\BaseModel;
+use PDO;
 
 final class UserModel extends BaseModel
 {
@@ -41,5 +42,85 @@ final class UserModel extends BaseModel
     {
         $stmt = $this->pdo->prepare('UPDATE users SET last_login_at = NOW() WHERE id = :id');
         $stmt->execute(['id' => $id]);
+    }
+
+    public function listWithProfile(int $limit, int $offset, string $query = ''): array
+    {
+        $sql = 'SELECT u.id, u.email, u.password_hash, u.role, u.is_active, u.last_login_at,
+                       up.id AS profile_id, up.team_id, up.first_name, up.paternal_surname, up.maternal_surname,
+                       up.birth_date, up.curp, up.phone, up.jersey_number, up.position, up.employee_class,
+                       up.employee_number, up.employee_area, up.isstecali_affiliation,
+                       t.name AS team_name
+                FROM users u
+                LEFT JOIN user_profiles up ON up.user_id = u.id
+                LEFT JOIN teams t ON t.id = up.team_id';
+        $params = [];
+
+        if ($query !== '') {
+            $sql .= ' WHERE (
+                        u.email LIKE :q_email OR
+                        u.role LIKE :q_role OR
+                        up.first_name LIKE :q_first_name OR
+                        up.paternal_surname LIKE :q_paternal_surname OR
+                        up.maternal_surname LIKE :q_maternal_surname OR
+                        t.name LIKE :q_team_name
+                      )';
+            $likeValue = '%' . $query . '%';
+            $params = [
+                'q_email' => $likeValue,
+                'q_role' => $likeValue,
+                'q_first_name' => $likeValue,
+                'q_paternal_surname' => $likeValue,
+                'q_maternal_surname' => $likeValue,
+                'q_team_name' => $likeValue,
+            ];
+        }
+
+        $sql .= ' ORDER BY u.id DESC LIMIT :limit OFFSET :offset';
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function countWithProfile(string $query = ''): int
+    {
+        $sql = 'SELECT COUNT(*)
+                FROM users u
+                LEFT JOIN user_profiles up ON up.user_id = u.id
+                LEFT JOIN teams t ON t.id = up.team_id';
+        $params = [];
+
+        if ($query !== '') {
+            $sql .= ' WHERE (
+                        u.email LIKE :q_email OR
+                        u.role LIKE :q_role OR
+                        up.first_name LIKE :q_first_name OR
+                        up.paternal_surname LIKE :q_paternal_surname OR
+                        up.maternal_surname LIKE :q_maternal_surname OR
+                        t.name LIKE :q_team_name
+                      )';
+            $likeValue = '%' . $query . '%';
+            $params = [
+                'q_email' => $likeValue,
+                'q_role' => $likeValue,
+                'q_first_name' => $likeValue,
+                'q_paternal_surname' => $likeValue,
+                'q_maternal_surname' => $likeValue,
+                'q_team_name' => $likeValue,
+            ];
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
     }
 }
