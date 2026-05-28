@@ -104,6 +104,7 @@ $sindicatoUrl = '/baseball-tms/assets/logo/sutspemidbc.jpg';
 <div class="page">
     <div class="card-wrapper">
         <section class="credential credential-front">
+            <div class="front-tournament">TORNEO DE BASEBALL BURÓCRATA 2026<br />"GONZALO FERNANDEZ CRUZ" (EL VERACRUZ)</div>
             <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
             <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del sindicato" class="front-logo">
             <div class="front-fields">
