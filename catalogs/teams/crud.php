@@ -368,6 +368,7 @@ $queryForPage = static function (int $targetPage, string $q): string {
                 </label>
                 <div class="modal__actions">
                     <button type="button" class="btn btn--ghost" data-close-modal>Cerrar</button>
+                    <a class="btn btn--ghost" href="/baseball-tms/catalogs/teams/credentials.php?id=<?= $teamRowId ?>" target="_blank" rel="noopener">Ver credenciales</a>
                     <button type="submit" class="btn btn--primary">Guardar cambios</button>
                 </div>
             </form>
