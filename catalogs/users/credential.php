@@ -104,15 +104,12 @@ $sindicatoUrl = '/baseball-tms/assets/logo/sutspemidbc.jpg';
 <div class="page">
     <div class="card-wrapper">
         <section class="credential credential-front">
-            <div class="front-tournament">TORNEO DE BASEBALL BURÓCRATA 2026<br />"GONZALO FERNANDEZ CRUZ" (EL VERACRUZ)</div>
             <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
-            <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Logo del sindicato" class="front-logo">
-            <div class="front-fields">
-                <div class="field"><span class="field-label">EQUIPO</span><span class="field-value"><?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?></span></div>
-                <div class="field"><span class="field-label">CATEGORÍA</span><span class="field-value"><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?></span></div>
-                <div class="field"><span class="field-label">NOMBRE COMPLETO</span><span class="field-value"><?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?></span></div>
-                <div class="field"><span class="field-label">CLASE DE EMPLEADO</span><span class="field-value"><?= htmlspecialchars($employeeClass, ENT_QUOTES, 'UTF-8') ?></span></div>
-            </div>
+            <div class="team-name"><?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="category-name"><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="full-name"><?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="employee-class"><?= htmlspecialchars($employeeClass, ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="folio-number"><?= htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8') ?></div>
         </section>
     </div>
 
