@@ -118,7 +118,9 @@ usort($players, static function (array $a, array $b): int {
     <section class="grid">
         <?php foreach ($players as $player): ?>
             <section class="credential credential-front">
-                <img src="<?= htmlspecialchars((string) $player['photo_url'], ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
+                <div class="front-photo-container">
+                    <img src="<?= htmlspecialchars((string) $player['photo_url'], ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
+                </div>
                 <div class="team-name"><?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="category-name"><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="full-name"><?= htmlspecialchars((string) $player['full_name'], ENT_QUOTES, 'UTF-8') ?></div>

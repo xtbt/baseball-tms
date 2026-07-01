@@ -104,7 +104,9 @@ $sindicatoUrl = '/baseball-tms/assets/logo/sutspemidbc.jpg';
 <div class="page">
     <div class="card-wrapper">
         <section class="credential credential-front">
-            <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
+            <div class="front-photo-container">
+                <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="Foto del jugador" class="front-photo">
+            </div>
             <div class="team-name"><?= htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') ?></div>
             <div class="category-name"><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?></div>
             <div class="full-name"><?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?></div>
