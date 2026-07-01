@@ -32,6 +32,11 @@ final class UserController extends CrudController
         $limit = max(1, min(200, (int) $this->request->query('limit', 100)));
         $offset = max(0, (int) $this->request->query('offset', 0));
         $includeProfile = (int) $this->request->query('include_profile', 0) === 1;
+        $role = trim((string) $this->request->query('role', ''));
+        $teamId = (int) $this->request->query('team_id', 0);
+
+        $roleFilter = $role !== '' ? $role : null;
+        $teamIdFilter = $teamId > 0 ? $teamId : null;
 
         if (!$includeProfile) {
             $rows = $this->model->all($limit, $offset);
@@ -42,7 +47,7 @@ final class UserController extends CrudController
         }
 
         $query = trim((string) $this->request->query('q', ''));
-        $rows = $this->model->listWithProfile($limit, $offset, $query);
+        $rows = $this->model->listWithProfile($limit, $offset, $query, $roleFilter, $teamIdFilter);
         $items = [];
         foreach ($rows as $row) {
             $profile = null;
@@ -76,7 +81,7 @@ final class UserController extends CrudController
             ];
         }
 
-        $total = $this->model->countWithProfile($query);
+        $total = $this->model->countWithProfile($query, $roleFilter, $teamIdFilter);
         $this->ok([
             'items' => $items,
             'meta' => [

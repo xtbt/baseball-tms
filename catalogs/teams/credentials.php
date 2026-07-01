@@ -61,22 +61,22 @@ $offset = 0;
 $limit = 200;
 
 for ($i = 0; $i < 50; $i++) {
-    $usersResponse = api_request('GET', '/users?limit=' . $limit . '&offset=' . $offset, $token);
-    $chunk = $usersResponse['body']['data'] ?? [];
+    $usersResponse = api_request('GET', '/users?include_profile=1&limit=' . $limit . '&offset=' . $offset . '&role=player&team_id=' . $teamId, $token);
+    $responseBody = $usersResponse['body']['data'] ?? $usersResponse['body'] ?? [];
+    $chunk = $responseBody['items'] ?? $responseBody ?? [];
     if (!is_array($chunk) || empty($chunk)) {
         break;
     }
     foreach ($chunk as $u) {
-        if (!is_array($u) || (string) ($u['role'] ?? '') !== 'player') {
+        if (!is_array($u)) {
             continue;
         }
         $id = (int) ($u['id'] ?? 0);
         if ($id <= 0) {
             continue;
         }
-        $profileResponse = api_request('GET', '/users/' . $id . '/profile', $token);
-        $profile = $profileResponse['body']['data'] ?? [];
-        if (!is_array($profile) || (int) ($profile['team_id'] ?? 0) !== $teamId) {
+        $profile = $u['profile'] ?? [];
+        if (!is_array($profile)) {
             continue;
         }
         $firstName = trim((string) ($profile['first_name'] ?? ''));
@@ -91,7 +91,8 @@ for ($i = 0; $i < 50; $i++) {
             'photo_url' => $photoByUser($id),
         ];
     }
-    if (count($chunk) < $limit) {
+    $meta = $responseBody['meta'] ?? [];
+    if ((int) ($meta['limit'] ?? 0) !== $limit || (int) ($meta['total'] ?? 0) <= $offset + $limit) {
         break;
     }
     $offset += $limit;

@@ -44,7 +44,7 @@ final class UserModel extends BaseModel
         $stmt->execute(['id' => $id]);
     }
 
-    public function listWithProfile(int $limit, int $offset, string $query = ''): array
+    public function listWithProfile(int $limit, int $offset, string $query = '', ?string $role = null, ?int $teamId = null): array
     {
         $sql = 'SELECT u.id, u.email, u.password_hash, u.role, u.is_active, u.last_login_at,
                        up.id AS profile_id, up.team_id, up.first_name, up.paternal_surname, up.maternal_surname,
@@ -55,9 +55,10 @@ final class UserModel extends BaseModel
                 LEFT JOIN user_profiles up ON up.user_id = u.id
                 LEFT JOIN teams t ON t.id = up.team_id';
         $params = [];
+        $whereConditions = [];
 
         if ($query !== '') {
-            $sql .= ' WHERE (
+            $whereConditions[] = '(
                         u.email LIKE :q_email OR
                         u.role LIKE :q_role OR
                         up.first_name LIKE :q_first_name OR
@@ -76,11 +77,25 @@ final class UserModel extends BaseModel
             ];
         }
 
+        if ($role !== null) {
+            $whereConditions[] = 'u.role = :filter_role';
+            $params['filter_role'] = $role;
+        }
+
+        if ($teamId !== null && $teamId > 0) {
+            $whereConditions[] = 'up.team_id = :filter_team_id';
+            $params['filter_team_id'] = $teamId;
+        }
+
+        if (!empty($whereConditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $whereConditions);
+        }
+
         $sql .= ' ORDER BY u.id DESC LIMIT :limit OFFSET :offset';
 
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $key => $value) {
-            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+            $stmt->bindValue(':' . $key, $value, $value === (int) $value ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -88,16 +103,17 @@ final class UserModel extends BaseModel
         return $stmt->fetchAll();
     }
 
-    public function countWithProfile(string $query = ''): int
+    public function countWithProfile(string $query = '', ?string $role = null, ?int $teamId = null): int
     {
         $sql = 'SELECT COUNT(*)
                 FROM users u
                 LEFT JOIN user_profiles up ON up.user_id = u.id
                 LEFT JOIN teams t ON t.id = up.team_id';
         $params = [];
+        $whereConditions = [];
 
         if ($query !== '') {
-            $sql .= ' WHERE (
+            $whereConditions[] = '(
                         u.email LIKE :q_email OR
                         u.role LIKE :q_role OR
                         up.first_name LIKE :q_first_name OR
@@ -116,9 +132,23 @@ final class UserModel extends BaseModel
             ];
         }
 
+        if ($role !== null) {
+            $whereConditions[] = 'u.role = :filter_role';
+            $params['filter_role'] = $role;
+        }
+
+        if ($teamId !== null && $teamId > 0) {
+            $whereConditions[] = 'up.team_id = :filter_team_id';
+            $params['filter_team_id'] = $teamId;
+        }
+
+        if (!empty($whereConditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $whereConditions);
+        }
+
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $key => $value) {
-            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+            $stmt->bindValue(':' . $key, $value, $value === (int) $value ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         $stmt->execute();
         return (int) $stmt->fetchColumn();
