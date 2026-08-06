@@ -9,7 +9,8 @@
       "Bash(rg -n isstecali_affiliation /Applications/XAMPP/xamppfiles/htdocs/baseball-tms/catalogs/users/crud.php)",
       "Bash(for f in \\\n\"/Applications/XAMPP/xamppfiles/htdocs/baseball-tms/API/v1/app/Models/UserProfileModel.php\" \\\n\"/Applications/…)",
       "Bash(php -l \"/Applications/XAMPP/xamppfiles/htdocs/baseball-tms/catalogs/users/crud.php\" 2>&1 | grep -v \"zip\")",
-      "Bash(php -l \"/Applications/XAMPP/xamppfiles/htdocs/baseball-tms/catalogs/users/crud.php\" 2>&1 | grep -v zip\nphp -l \"/Applicat…)"
+      "Bash(php -l \"/Applications/XAMPP/xamppfiles/htdocs/baseball-tms/catalogs/users/crud.php\" 2>&1 | grep -v zip\nphp -l \"/Applicat…)",
+      "Bash(php *)"
     ]
   }
 }

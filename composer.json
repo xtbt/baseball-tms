@@ -1,0 +1,13 @@
+{
+    "name": "baseball/tms",
+    "type": "project",
+    "authors": [
+        {
+            "name": "xtbt",
+            "email": "jsanchez.1983@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^2.1"
+    }
+}
