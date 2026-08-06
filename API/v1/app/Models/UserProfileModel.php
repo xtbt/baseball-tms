@@ -12,7 +12,8 @@ final class UserProfileModel extends BaseModel
     protected $fillable = [
         'user_id', 'team_id', 'first_name', 'paternal_surname', 'maternal_surname',
         'birth_date', 'curp', 'phone', 'jersey_number', 'position', 'employee_class',
-        'employee_number', 'employee_area', 'isstecali_affiliation'
+        'employee_number', 'employee_area', 'isstecali_affiliation',
+        'shirt_size', 'pants_size', 'hat_size'
     ];
 
     public function create(array $data): int

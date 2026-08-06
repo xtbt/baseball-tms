@@ -50,6 +50,7 @@ final class UserModel extends BaseModel
                        up.id AS profile_id, up.team_id, up.first_name, up.paternal_surname, up.maternal_surname,
                        up.birth_date, up.curp, up.phone, up.jersey_number, up.position, up.employee_class,
                        up.employee_number, up.employee_area, up.isstecali_affiliation,
+                       up.shirt_size, up.pants_size, up.hat_size,
                        t.name AS team_name
                 FROM users u
                 LEFT JOIN user_profiles up ON up.user_id = u.id

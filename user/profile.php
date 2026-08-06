@@ -30,6 +30,7 @@ $requiredProfileFields = [
     'birth_date' => 'Fecha de nacimiento',
 ];
 $employeeClassOptions = ['BASE', 'CONFIANZA', 'CONTRATO', 'HIJO', 'INVITADO'];
+$shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 
 if ($userRole !== 'player' && $userRole !== 'manager' && $userRole !== 'admin') {
     clear_auth();
@@ -63,6 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $employeeNumber = $stringOrNull('employee_number');
     $employeeArea = $stringOrNull('employee_area');
     $isstecaliAffiliation = $stringOrNull('isstecali_affiliation');
+    $shirtSize = $stringOrNull('shirt_size');
+    $hatSize = $stringOrNull('hat_size');
 
     $teamIdRaw = trim((string) ($_POST['team_id'] ?? ''));
     $teamId = null;
@@ -82,6 +85,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $jerseyNumber = (int) $jerseyRaw;
         } else {
             $_SESSION['flash_error'] = 'El número de jersey debe ser numérico.';
+            redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
+        }
+    }
+
+    $pantsSizeRaw = trim((string) ($_POST['pants_size'] ?? ''));
+    $pantsSize = null;
+    if ($pantsSizeRaw !== '') {
+        if (ctype_digit($pantsSizeRaw) && (int) $pantsSizeRaw <= 99) {
+            $pantsSize = (int) $pantsSizeRaw;
+        } else {
+            $_SESSION['flash_error'] = 'La talla de pantalón debe ser un número de hasta 2 dígitos.';
             redirect_to('/baseball-tms/user/profile.php?user_id=' . $userId);
         }
     }
@@ -112,6 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'La clase de empleado seleccionada no es válida.';
     }
 
+    if ($shirtSize !== null && !in_array($shirtSize, $shirtSizeOptions, true)) {
+        $errors[] = 'La talla de playera seleccionada no es válida.';
+    }
+
     if ($employeeNumber !== null && !preg_match('/^[A-Za-z0-9\-]{1,30}$/', $employeeNumber)) {
         $errors[] = 'El número de empleado tiene formato inválido.';
     }
@@ -135,6 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'employee_number' => $employeeNumber,
         'employee_area' => $employeeArea,
         'isstecali_affiliation' => $isstecaliAffiliation,
+        'shirt_size' => $shirtSize,
+        'pants_size' => $pantsSize,
+        'hat_size' => $hatSize,
     ];
 
     $saveResponse = api_request('PUT', '/users/' . $userId . '/profile', $token, $payload);
@@ -345,6 +366,26 @@ $isActiveText = ((int) ($profileUser['is_active'] ?? 0) === 1) ? 'Activo' : 'Ina
                 </label>
                 <label>Afiliación ISSSTECALI
                     <input type="text" name="isstecali_affiliation" <?= $canEditProfile ? 'maxlength="100"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['isstecali_affiliation'] ?? null) : $displayValue($profile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Talla de playera
+                    <?php if ($canEditProfile): ?>
+                        <select name="shirt_size">
+                            <option value="" <?= $formValue($profile['shirt_size'] ?? null) === '' ? 'selected' : '' ?>>No especificado</option>
+                            <?php foreach ($shirtSizeOptions as $shirtSizeOption): ?>
+                                <option value="<?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?>" <?= $formValue($profile['shirt_size'] ?? null) === $shirtSizeOption ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <input type="text" readonly value="<?= htmlspecialchars($displayValue($profile['shirt_size'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
+                </label>
+                <label>Talla de pantalón
+                    <input type="number" name="pants_size" <?= $canEditProfile ? 'min="0" max="99" step="1"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['pants_size'] ?? null) : $displayValue($profile['pants_size'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                </label>
+                <label>Talla de gorra
+                    <input type="text" name="hat_size" <?= $canEditProfile ? 'maxlength="6"' : 'readonly' ?> value="<?= htmlspecialchars($canEditProfile ? $formValue($profile['hat_size'] ?? null) : $displayValue($profile['hat_size'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                 </label>
             </fieldset>
             <?php if ($canEditProfile): ?>

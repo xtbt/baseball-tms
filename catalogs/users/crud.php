@@ -34,6 +34,7 @@ if ($teamId > 0) {
 }
 
 $employeeClassOptions = ['BASE', 'CONFIANZA', 'CONTRATO', 'HIJO', 'INVITADO'];
+$shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 $roleOptions = ['admin', 'manager', 'player'];
 
 $teamsResponse = api_request('GET', '/teams?limit=500&offset=0', $token);
@@ -110,7 +111,7 @@ $stringOrNull = static function (string $key): ?string {
     return $value !== '' ? $value : null;
 };
 
-$buildProfilePayload = static function (array $teamsMap, array $employeeClassOptions): array {
+$buildProfilePayload = static function (array $teamsMap, array $employeeClassOptions, array $shirtSizeOptions): array {
     $firstName = trim((string) ($_POST['first_name'] ?? ''));
     $paternalSurname = trim((string) ($_POST['paternal_surname'] ?? ''));
     $maternalSurnameRaw = trim((string) ($_POST['maternal_surname'] ?? ''));
@@ -122,6 +123,9 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
     $employeeNumberRaw = trim((string) ($_POST['employee_number'] ?? ''));
     $employeeAreaRaw = trim((string) ($_POST['employee_area'] ?? ''));
     $isstecaliAffiliationRaw = trim((string) ($_POST['isstecali_affiliation'] ?? ''));
+    $shirtSizeRaw = trim((string) ($_POST['shirt_size'] ?? ''));
+    $pantsSizeRaw = trim((string) ($_POST['pants_size'] ?? ''));
+    $hatSizeRaw = trim((string) ($_POST['hat_size'] ?? ''));
 
     $teamIdRaw = trim((string) ($_POST['team_id'] ?? ''));
     $teamId = null;
@@ -153,6 +157,10 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
         throw new RuntimeException('La clase de empleado seleccionada no es válida.');
     }
 
+    if ($shirtSizeRaw !== '' && !in_array($shirtSizeRaw, $shirtSizeOptions, true)) {
+        throw new RuntimeException('La talla de playera seleccionada no es válida.');
+    }
+
     $jerseyRaw = trim((string) ($_POST['jersey_number'] ?? ''));
     $jerseyNumber = null;
     if ($jerseyRaw !== '') {
@@ -160,6 +168,14 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
             throw new RuntimeException('El número de jersey debe ser numérico.');
         }
         $jerseyNumber = (int) $jerseyRaw;
+    }
+
+    $pantsSizeNumber = null;
+    if ($pantsSizeRaw !== '') {
+        if (!ctype_digit($pantsSizeRaw) || (int) $pantsSizeRaw > 99) {
+            throw new RuntimeException('La talla de pantalón debe ser un número de hasta 2 dígitos.');
+        }
+        $pantsSizeNumber = (int) $pantsSizeRaw;
     }
 
     return [
@@ -176,6 +192,9 @@ $buildProfilePayload = static function (array $teamsMap, array $employeeClassOpt
         'employee_number' => $employeeNumberRaw !== '' ? $employeeNumberRaw : null,
         'employee_area' => $employeeAreaRaw !== '' ? $employeeAreaRaw : null,
         'isstecali_affiliation' => $isstecaliAffiliationRaw !== '' ? $isstecaliAffiliationRaw : null,
+        'shirt_size' => $shirtSizeRaw !== '' ? $shirtSizeRaw : null,
+        'pants_size' => $pantsSizeNumber,
+        'hat_size' => $hatSizeRaw !== '' ? $hatSizeRaw : null,
     ];
 };
 
@@ -203,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         try {
-            $profilePayload = $buildProfilePayload($teamsMap, $employeeClassOptions);
+            $profilePayload = $buildProfilePayload($teamsMap, $employeeClassOptions, $shirtSizeOptions);
         } catch (RuntimeException $e) {
             $_SESSION['flash_error'] = $e->getMessage();
             $redirectList($returnQ, $returnPage);
@@ -258,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         try {
-            $profilePayload = $buildProfilePayload($teamsMap, $employeeClassOptions);
+            $profilePayload = $buildProfilePayload($teamsMap, $employeeClassOptions, $shirtSizeOptions);
         } catch (RuntimeException $e) {
             $_SESSION['flash_error'] = $e->getMessage();
             $redirectList($returnQ, $returnPage);
@@ -637,6 +656,20 @@ $formValue = static function ($value): string {
                 <label>Afiliación ISSSTECALI
                     <input type="text" name="isstecali_affiliation" maxlength="100">
                 </label>
+                <label>Talla de playera
+                    <select name="shirt_size">
+                        <option value="">No especificado</option>
+                        <?php foreach ($shirtSizeOptions as $shirtSizeOption): ?>
+                            <option value="<?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label>Talla de pantalón
+                    <input type="number" name="pants_size" min="0" max="99" step="1">
+                </label>
+                <label>Talla de gorra
+                    <input type="text" name="hat_size" maxlength="6">
+                </label>
             </fieldset>
             <div class="modal__actions">
                 <button type="button" class="btn btn--ghost" data-close-modal>Cerrar</button>
@@ -738,6 +771,22 @@ $formValue = static function ($value): string {
                     <label>Afiliación ISSSTECALI
                         <input type="text" name="isstecali_affiliation" maxlength="100" value="<?= htmlspecialchars($formValue($rowProfile['isstecali_affiliation'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
                     </label>
+                    <label>Talla de playera
+                        <select name="shirt_size">
+                            <option value="" <?= $formValue($rowProfile['shirt_size'] ?? null) === '' ? 'selected' : '' ?>>No especificado</option>
+                            <?php foreach ($shirtSizeOptions as $shirtSizeOption): ?>
+                                <option value="<?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?>" <?= $formValue($rowProfile['shirt_size'] ?? null) === $shirtSizeOption ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($shirtSizeOption, ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label>Talla de pantalón
+                        <input type="number" name="pants_size" min="0" max="99" step="1" value="<?= htmlspecialchars($formValue($rowProfile['pants_size'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    </label>
+                    <label>Talla de gorra
+                        <input type="text" name="hat_size" maxlength="6" value="<?= htmlspecialchars($formValue($rowProfile['hat_size'] ?? null), ENT_QUOTES, 'UTF-8') ?>">
+                    </label>
                 </fieldset>
                 <div class="modal__actions">
                     <button type="button" class="btn btn--ghost" data-close-modal>Cerrar</button>
@@ -782,3 +831,4 @@ $formValue = static function ($value): string {
 <script src="/baseball-tms/catalogs/users/crud.js"></script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                            

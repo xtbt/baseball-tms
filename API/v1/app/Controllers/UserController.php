@@ -67,6 +67,9 @@ final class UserController extends CrudController
                     'employee_number' => $row['employee_number'] ?? null,
                     'employee_area' => $row['employee_area'] ?? null,
                     'isstecali_affiliation' => $row['isstecali_affiliation'] ?? null,
+                    'shirt_size' => $row['shirt_size'] ?? null,
+                    'pants_size' => $row['pants_size'] ?? null,
+                    'hat_size' => $row['hat_size'] ?? null,
                     'team_name' => $row['team_name'] ?? null,
                 ];
             }
